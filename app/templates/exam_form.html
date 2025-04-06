@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg" style="width: 700px; max-height: 90vh; overflow-y: auto;">
+        <h4 class="text-center my-3">{{heading}}</h4>
+        <hr class="py-3">
+        <div>
+           {{ render_form(form)}}
+        </div>
+        <hr class="pt-3">
+        <div class="pt-3 text-center">
+            <p>
+                Course does not exist? <a href="{{url_for('main.create_course')}}">Create Course</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+
+

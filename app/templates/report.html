@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Attendance Report for {{ session.name }} - {{ session.date_time }}</h1>
+    <h2 class="mb-4">Venue: {{ session.venue.name }}</h2>
+    {% if attendances %}
+        <ul class="list-group">
+            {% for attendance in attendances %}
+                <li class="list-group-item">{{ attendance.user.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No attendance recorded for this session.</p>
+    {% endif %}
+    <a href="{{ url_for('attendance') }}" class="btn btn-primary mt-3">Back to Attendance</a>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+
+{% extends "layout.html" %}
+
+{% block title %}
+
+{% endblock title %}
+
+
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 100vh; padding-top: 100px;">
+        <div class="container">
+            <h1>Track Attendance with Ease</h1>
+            <p>Secure and reliable attendance management system</p>
+            <a id="hero-button" href="{{url_for('main.login') }}" class="btn btn-light btn-lg rounded-pill mt-3">Get Started</a>
+        </div>
+    </section>
+
+
+
+
+     <!-- Features -->
+     <section id="features-section" class="container my-5 py-5 align-items-center">
+        <div class="row text-center align-items-center">
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <h5>Easy to Use</h5>
+                    <p>Simple and intuitive interface for attendance tracking.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <h5>Real-time Reports</h5>
+                    <p>Generate detailed attendance reports instantly.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <h5>Secure</h5>
+                    <p>Ensuring privacy and security of attendance records.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+<div style="background-color: whitesmoke;" class="container mt-5 py-3 px-5">
+    <h2 class="text-center bg-light">Attendance Reports</h2>
+    <table class="table table-bordered table-striped mt-4 bg-white shadow-lg">
+        <thead>
+            <tr class="bg-info">
+                <th>Title</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Session Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{% if user.title_id %}{{ user.title.title }}{% endif %}</td>
+                <td>{{user.surname}} {{user.first_name}}</td>
+                <td>{{user.department.name}}</td>
+                <td>{{user.session_count}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}

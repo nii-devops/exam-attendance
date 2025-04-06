@@ -1,0 +1,215 @@
+{% extends "layout.html" %}
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg" style="width: 500px; max-height: 90vh; overflow-y: auto;">
+        <h4 class="text-center my-3">{{heading}}</h4>
+        <hr class="py-3">
+        <div>
+            <form method="POST" action="{{ url_for('main.staff_attendance') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.date.label(class="form-label") }}
+                    {{ form.date(class="form-control") }}
+                    <div class="form-text">Select a date to filter available sessions</div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.session.label(class="form-label") }}
+                    <div class="position-relative">
+                        {{ form.session(class="form-select") }}
+                        <div id="session-loading" class="position-absolute top-50 end-0 translate-middle-y me-2 d-none">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.venues.label(class="form-label") }}
+                    {{ form.venues(class="form-select") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.staff_search.label(class="form-label") }}
+                    <div class="position-relative">
+                        {{ form.staff_search(class="form-control") }}
+                        {{ form.staff_id() }}
+                        <div id="staff-loading" class="position-absolute top-50 end-0 translate-middle-y me-2 d-none">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Searching...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-text">Type to search for staff members</div>
+                </div>
+                
+                <div class="d-grid gap-2 py-3">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+                <hr>
+                <div class="text-center">
+                    Staff not in list? <a class="btn btn-sm btn-outline-primary " href="{{url_for('main.register_user')}}">Add Staff</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Function to update sessions based on selected date
+    function updateSessions(date) {
+        // Show loading indicator (if you have one)
+        $('#session_field').prop('disabled', true);
+        
+        $.ajax({
+            url: '/get_sessions',
+            data: { date: date },
+            type: 'GET',
+            success: function(response) {
+                var sessionSelect = $('#session_field');
+                sessionSelect.empty();
+                
+                if (response.length > 0) {
+                    $.each(response, function(index, session) {
+                        sessionSelect.append(
+                            $('<option></option>')
+                                .val(session.id)
+                                .text(session.name)
+                        );
+                    });
+                } else {
+                    sessionSelect.append(
+                        $('<option></option>')
+                            .val('')
+                            .text('No sessions available for this date')
+                    );
+                }
+                
+                // Enable the select field again
+                sessionSelect.prop('disabled', false);
+            },
+            error: function(error) {
+                console.error('Error loading sessions:', error);
+                $('#session_field').empty().append(
+                    $('<option></option>')
+                        .val('')
+                        .text('Error loading sessions')
+                );
+                $('#session_field').prop('disabled', false);
+            }
+        });
+    }
+
+    // Date field change event handler
+    $('#date_field').change(function() {
+        var selectedDate = $(this).val();
+        if (selectedDate) {
+            // Update the URL for bookmarking/sharing (optional)
+            var url = new URL(window.location.href);
+            url.searchParams.set('date', selectedDate);
+            history.pushState({}, '', url);
+            
+            // Update sessions dropdown
+            updateSessions(selectedDate);
+        }
+    });
+
+    // Initialize staff search autocomplete
+    $('#staff_search_field').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: '/search_staff',
+                data: { q: request.term },
+                type: 'GET',
+                success: function(data) {
+                    // Format data for autocomplete
+                    var formattedData = $.map(data, function(item) {
+                        return {
+                            label: item.name,    // Display in dropdown
+                            value: item.name,    // Value to show in input field
+                            id: item.id          // ID to store in hidden field
+                        };
+                    });
+                    response(formattedData);
+                },
+                error: function(error) {
+                    console.error('Error searching staff:', error);
+                    response([]);
+                }
+            });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            // Set the hidden field with the staff ID
+            $('#staff_id_field').val(ui.item.id);
+            
+            // Add visual feedback
+            $('#staff_search_field').removeClass('is-invalid').addClass('is-valid');
+            return true;
+        },
+        change: function(event, ui) {
+            // If nothing was selected but text exists
+            if (!ui.item && $('#staff_search_field').val().trim() !== '') {
+                $('#staff_id_field').val('');
+                $('#staff_search_field').removeClass('is-valid').addClass('is-invalid');
+                
+                // Add validation feedback if not already present
+                if (!$('#staff_feedback').length) {
+                    $('#staff_search_field').after(
+                        '<div id="staff_feedback" class="invalid-feedback">' +
+                        'Please select a staff member from the dropdown.' +
+                        '</div>'
+                    );
+                }
+            } else if (!ui.item) {
+                // Field was cleared
+                $('#staff_id_field').val('');
+                $('#staff_search_field').removeClass('is-valid is-invalid');
+            }
+        }
+    });
+
+    // Form submission validation
+    $('form').on('submit', function(e) {
+        // Validate that a staff member was selected if text was entered
+        if ($('#staff_search_field').val().trim() !== '' && $('#staff_id_field').val() === '') {
+            e.preventDefault();
+            $('#staff_search_field').addClass('is-invalid');
+            
+            // Show validation message
+            if (!$('#staff_feedback').length) {
+                $('#staff_search_field').after(
+                    '<div id="staff_feedback" class="invalid-feedback">' +
+                    'Please select a valid staff member from the dropdown.' +
+                    '</div>'
+                );
+            }
+            return false;
+        }
+    });
+
+    // Check for date parameter in URL and update sessions if present
+    var urlParams = new URLSearchParams(window.location.search);
+    var dateParam = urlParams.get('date');
+    
+    if (dateParam) {
+        // Set the date field value
+        $('#date_field').val(dateParam);
+        
+        // No need to manually update sessions here since the backend
+        // already initializes the form with the correct sessions
+        // when selected_date is provided
+    }
+});
+</script>
+{% endblock scripts %}
