@@ -32,19 +32,8 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">Home</a></li>
                     
                     {% if current_user and current_user.is_authenticated %}
-                    <!-- Schedule Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Attendance
-                        </a>
-                        <ul class="dropdown-menu bg-dark">
-                            <li><a class="dropdown-item " href="{{ url_for('main.staff_attendance') }}">Take Attendance</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.view_attendance') }}">Attendance Report</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-                    
-                    {% if current_user.is_authenticated and (current_user.id == 1 or current_user.is_admin == True) %}
+                    <li class="nav-item"><a class="nav-link" href="reports.html">Attendance</a></li>
+
                     <!-- Schedule Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -58,24 +47,29 @@
                         </ul>
                     </li>
 
-                    <!-- Create Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Create
-                        </a>
-                        <ul class="dropdown-menu bg-dark">
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_programmes') }}">Create Programmes</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_title') }}">Create Title</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_users') }}">Create Users</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_days') }}">Create Days</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_academic_year') }}">Add Academic Year</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_session') }}">Create Session</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.create_sessions') }}">Create Sessions</a></li>
-                            <li><a class="dropdown-item " href="{{ url_for('main.create_venues') }}">Create Venues</a></li>
-                        </ul>
-                    </li>
+                        <!-- Create Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Create
+                            </a>
+                            <ul class="dropdown-menu bg-dark">
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_programmes') }}">Create Programmes</a></li>
+                                <li><a class="dropdown-item " href="{{ url_for('main.create_departments') }}">Create Departments</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_title') }}">Create Title</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_users') }}">Create Users</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_days') }}">Create Days</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_academic_year') }}">Add Academic Year</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_session') }}">Create Session</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.create_sessions') }}">Create Sessions</a></li>
+                                <li><a class="dropdown-item " href="{{ url_for('main.create_venues') }}">Create Venues</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
 
+                    {% endif %}
+
+                    {% if current_user and current_user.is_authenticated %}
                     <!-- Reports Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -84,12 +78,10 @@
                         <ul class="dropdown-menu bg-dark">
                             <li><a class="dropdown-item" href="{{ url_for('main.view_exams') }}">View Exams</a></li>
                             <li><a class="dropdown-item " href="{{ url_for('main.attendance') }}">View Attendance</a></li>
-                            <li><a class="dropdown-item " href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
                             
                         </ul>
                     </li>
-
-                    <li class="nav-item ps-5"><a class="nav-link" href="{{ url_for('main.home') }}">Logout</a></li>
+                    <li class="nav-item ps-5"><a class="nav-link" href="{{ url_for('main.logout') }}">Logout</a></li>
                     {% else %}
                     <li class="nav-item ps-5"><a class="nav-link" href="{{ url_for('main.login') }}">Login</a></li>
                     {% endif %}
@@ -97,6 +89,8 @@
             </div>
         </div>
     </nav>
+
+
 
     <div id="flash-section" class="container-fluid px-4" style="width: 400px;">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -111,8 +105,14 @@
         {% endwith %}
     </div>
 
+
+
+
     <div style="min-height: 100vh;" class="container-fluid">
-        {% block content %}{% endblock content %}
+        {% block content %}
+
+
+        {% endblock content %}
     </div>
 
     <!-- Footer -->

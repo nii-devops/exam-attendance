@@ -75,6 +75,10 @@ class User(db.Model, UserMixin):
     # One-directional relationship (no back_populates)
     sessions = db.relationship('ExamSession', secondary='user_session')
 
+    @property
+    def is_superuser(self):
+        return self.id == 1 or self.is_admin
+
 
 class ExamSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

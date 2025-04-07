@@ -98,28 +98,35 @@ def login():
 @bp.route('/logout')
 @login_required
 def logout():
-    session.pop()
-    logout_user()
+    logout_user()  # This is enough to log the user out
+    session.clear()  # Clears the session data safely
     return redirect(url_for('main.home'))
 
 
 
-@bp.route('/register_user', methods=['GET', 'POST'])
+
+@bp.route('/user/add', methods=['GET', 'POST'])
 def register_user():
     form = UserForm()
     if form.validate_on_submit():
-        if User.query.filter_by(surname=form.surname.data.upper(), first_name=form.first_name.data).first():
+        surname = form.surname.data
+        first_name = form.first_name.data
+        if User.query.filter_by(surname=surname.upper(), first_name=first_name).first():
             flash("User exists!", 'warning')
             return redirect(url_for('main.login'))
         db.session.add(
             User(
-                surname=form.surname.data,
-                first_name=form.first_name.data,
-                
+                title_id=form.title.data.id,
+                surname=surname.upper(),
+                first_name=first_name,
+                category_id=form.category.data.id,
+                department_id=form.department.data.id
             )
         )
-        #db.session.commit()
-    return render_template('register_user.html', form=form)
+        #print(f"{form.category.data.id} {form.surname.data}")
+        db.session.commit()
+        return redirect(url_for('main.staff_attendance'))
+    return render_template('login.html', form=form, title='Add User', heading='Add User')
 
 
 
@@ -290,6 +297,8 @@ def create_title():
 @bp.route('/user/create', methods=['GET', 'POST'])
 def create_user():
     form=UserForm()
+    if form.validate_on_submit():
+        pass
     return render_template('add_user.html', title='Create User', heading='Create User', form=form)
 
 
@@ -364,6 +373,32 @@ def create_users():
     return redirect(url_for('main.home'))
 
 
+
+@bp.route('/departments/create', methods=['GET', 'POST'])
+def create_departments():
+    df = pd.read_excel(
+        f'{UPLOAD_FOLDER}/list.xlsx',
+        header=0,
+        dtype={
+            'title': str,
+            'surname': str,
+            'first_name': str,
+            'department': str,
+            'category': str,
+            'role': str  # Ensure 'role' is read as string
+        }
+    )
+    for index, row in df.iterrows():
+        # Extract values; strip where applicable
+        department_str = row['department'].strip()
+
+        # Get Department
+        if not Department.query.filter_by(name=department_str).first():
+            db.session.add(
+                Department(name=department_str))
+            db.session.commit()
+    flash('Department created', 'success')
+    return redirect(url_for('main.home'))        
 
 
 @bp.route('/days/create', methods=['GET', 'POST'])
