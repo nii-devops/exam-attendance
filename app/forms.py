@@ -5,6 +5,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from app.models import *
 from app.data import titles
+from flask import request
 
 
 
@@ -74,6 +75,7 @@ class RegisterForm(FlaskForm):
         validators=[DataRequired(), EqualTo('password', message='Passwords must match')]
     )
     submit = SubmitField('Register') # Changed submit label for clarity
+
 
 
 class LoginForm(FlaskForm):
@@ -250,13 +252,66 @@ class ExamSessionForm(FlaskForm):
 
 class ScheduleForm(FlaskForm):
     """Form for creating or editing a Schedule."""
-    exam = QuerySelectField(
-        'Exam',
-        query_factory=lambda: Exam.query.all(),
-        get_label='title', # Display the exam title in the dropdown
-        allow_blank=False, # Require an exam to be selected
-        description='Select the exam for this schedule.'
+    session = QuerySelectField(
+        'Session',
+        query_factory=lambda: ExamSession.query.all(),
+        get_label='name',
+        allow_blank=False,
+        description='Select the session for this schedule.'
     )
+
+    # Define a query factory that filters venues based on the selected session
+    def get_venues():
+        # Default empty query if no session selected or in initial form state
+        if not getattr(request, 'form', None) or 'session' not in request.form:
+            return Venue.query.filter(Venue.id == None)  # Empty result
+        
+        session_id = int(request.form.get('session'))
+        # Get all exams for this session
+        exams = Exam.query.filter_by(session_id=session_id).all()
+        
+        # Collect venue IDs from all exams in this session
+        venue_ids = set()
+        for exam in exams:
+            for venue in exam.venues:
+                venue_ids.add(venue.id)
+        
+        # Query all venues with these IDs
+        return Venue.query.filter(Venue.id.in_(venue_ids)).all() if venue_ids else []
+
+    venues = QuerySelectMultipleField(
+        'Venues',
+        query_factory=get_venues,
+        get_label='name',
+        allow_blank=True,
+        description='Select venue(s) for this schedule.'
+    )
+
+    staff = QuerySelectMultipleField(
+        'Assign Staff',
+        query_factory=lambda: User.query.filter(User.role == 'Biometric Staff - IT').all(),
+        get_label=lambda user: f"{user.first_name} {user.surname}",
+        allow_blank=True,
+        description='Select one or more staff members to assign.'
+    )
+
+    submit = SubmitField('Save Schedule')
+
+
+"""
+
+class ScheduleForm(FlaskForm):
+    # Form for creating or editing a Schedule.
+    session = QuerySelectField(
+        'Session',
+        query_factory=lambda: ExamSession.query.all(),
+        get_label='name', # Display the exam title in the dropdown
+        allow_blank=False, # Require an exam to be selected
+        description='Select the session for this schedule.'
+    )
+
+    venues = QuerySelectMultipleField()
+
     staff = QuerySelectMultipleField(
         'Assign Staff',
         query_factory=lambda: User.query.filter(User.role == 'Biometric Staff - IT').all(),
@@ -266,6 +321,9 @@ class ScheduleForm(FlaskForm):
     )
 
     submit = SubmitField('Save Schedule')
+
+
+"""
 
 
 

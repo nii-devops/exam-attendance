@@ -32,8 +32,19 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">Home</a></li>
                     
                     {% if current_user and current_user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="reports.html">Attendance</a></li>
-
+                    <!-- Schedule Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Attendance
+                        </a>
+                        <ul class="dropdown-menu bg-dark">
+                            <li><a class="dropdown-item " href="{{ url_for('main.staff_attendance') }}">Take Attendance</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.view_attendance') }}">Attendance Report</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and (current_user.id == 1 or current_user.is_admin == True) %}
                     <!-- Schedule Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

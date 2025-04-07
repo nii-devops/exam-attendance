@@ -98,16 +98,17 @@ class ExamSession(db.Model):
 class Exam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    session_id = db.Column(db.Integer, db.ForeignKey('exam_session.id'))
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     
+    session_id = db.Column(db.Integer, db.ForeignKey('exam_session.id'))
     session = db.relationship('ExamSession', backref='exams')
+
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     course = db.relationship('Course', backref='exams')
+
     programmes = db.relationship('Programme', secondary=exam_programme, 
                                 lazy='subquery', backref=db.backref('exams', lazy=True))
     venues = db.relationship('Venue', secondary=exam_venue, 
-                            lazy='subquery', backref=db.backref('exams', lazy=True))
-    
+                            lazy='subquery', backref=db.backref('exams', lazy=True))   
     @property
     def date(self):
         return self.session.date if self.session else None

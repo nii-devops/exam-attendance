@@ -43,7 +43,7 @@ def attendance():
 
 
 @bp.route('/attendance/', methods=['GET', 'POST'])
-def attendagnce():
+def view_attendance():
     users = User.query.order_by(User.surname, User.first_name).all()
     titles = Title.query.all()
     return render_template('attendance_report.html', users=users, titles=titles)
@@ -366,7 +366,6 @@ def create_users():
 
 
 
-
 @bp.route('/days/create', methods=['GET', 'POST'])
 def create_days():
     for i in range(1,22):
@@ -382,6 +381,7 @@ def create_days():
             flash('All required days already exist.', 'info')
     db.session.commit()
     return redirect(url_for('main.home'))
+
 
 
 @bp.route('/session/create', methods=['GET', 'POST'])
@@ -408,6 +408,7 @@ def create_session():
             flash('Session created successfully.', 'success')
             #return redirect(url_for('main.home'))
     return render_template('login.html', title='Create Session', heading="Create Session", form=form)
+
 
 
 @bp.route('/sessions/view', methods=['GET', 'POST'])
@@ -445,6 +446,7 @@ def edit_session(session_id):
             flash('Session created successfully.', 'success')
             #return redirect(url_for('main.home'))
     return render_template('login.html', title='Create Session', heading="Create Session", form=form)
+
 
 
 @bp.route('/sessions/create', methods=['GET', 'POST'])
@@ -485,19 +487,19 @@ def create_venues():
     return redirect(url_for('main.home'))
 
 
+
 @bp.route('/schedule/create', methods=['GET', 'POST'])
 def create_schedule():
     form = ScheduleForm()
     if form.validate_on_submit():
-        schedule = Schedule(exam_id=form.exam.data.id)
+        schedule = Schedule(session_id=form.session.data.id)
         db.session.add(schedule)    
         for staff in form.staff.data:
             schedule.staff.append(staff)
         db.session.commit()
         flash('Schedule created successfully.', 'success')
         return redirect(url_for('main.create_schedule'))
-    return render_template('staff_attendance.html', title='Create Schedule', heading='Create Schedule', form=form)
-
+    return render_template('form.html', title='Create Schedule', heading='Create Schedule', form=form)
 
 
 
@@ -620,66 +622,6 @@ def get_sessions():
     return jsonify([])
 
 
-
-"""
-
-
-@bp.route('/staff/take-attendance', methods=['GET', 'POST'])
-def staff_attendance():
-    form = AttendanceForm()
-    return render_template('login.html', title='Take Attendance', heading='Attendance', form=form)
-
-
-############################
-# ####### AJAX FUNCTIONALITY
-##########################
-
-@bp.route('/get_sessions')
-def get_sessions():
-    date = request.args.get('date')
-    if date:
-        sessions = ExamSession.query.filter(
-            db.func.date(ExamSession.date) == date
-        ).all()
-        session_options = [
-            {'id': s.id, 'name': f"{s.name} - {s.start_time}"}
-            for s in sessions
-        ]
-        return jsonify(session_options)
-    return jsonify([])
-
-
-@bp.route('/search_staff')
-def search_staff():
-    query = request.args.get('q', '')
-    if query:
-        # Split the query into parts for more flexible searching
-        parts = query.split(',')
-        search_term = f'%{query}%'  # Default to searching the full string
-        
-        # If comma is present, assume surname, first_name format
-        if len(parts) > 1:
-            surname_term = f'%{parts[0].strip()}%'
-            first_name_term = f'%{parts[1].strip()}%' if len(parts) > 1 else '%'
-            staff = User.query.filter(
-                (User.surname.ilike(surname_term)) &
-                (User.first_name.ilike(first_name_term))
-            ).order_by(User.surname).limit(10).all()
-        else:
-            # Search across the concatenated name
-            staff = User.query.filter(
-                (User.surname + ', ' + User.first_name).ilike(search_term)
-            ).order_by(User.surname).limit(10).all()
-        
-        staff_options = [
-            {'id': s.id, 'name': f"{s.surname}, {s.first_name}"}
-            for s in staff
-        ]
-        return jsonify(staff_options)
-    return jsonify([])
-
-
-"""
 
 
 
