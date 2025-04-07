@@ -1,6 +1,5 @@
 blinker==1.9.0
 Bootstrap-Flask==2.4.2
-camelot-py==1.0.0
 cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.1

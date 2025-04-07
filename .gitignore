@@ -11,6 +11,10 @@ env/
 .env/
 
 combined_timetable.xlsx
+test_models.py
+wsgi.py
+troubleshoot.txt
+
 
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
