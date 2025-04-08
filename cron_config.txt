@@ -1,0 +1,36 @@
+1. Polling for Changes with a Cron Job
+Overview:
+Instead of waiting for a webhook, you can set up a scheduled task (using cron) on your Ubuntu server to periodically check for updates and deploy them. This method doesn’t require any inbound connection from GitHub.
+
+How to Do It:
+
+Create a Deployment Script:
+Prepare a shell script (e.g., deploy.sh) that navigates to your app’s directory, pulls changes from GitHub, installs any new dependencies, and restarts your application if needed. For example:
+
+### bash
+
+#!/bin/bash
+cd /path/to/yourflaskapp || exit
+git pull origin main  # or your branch name
+source venv/bin/activate
+pip install -r requirements.txt
+sudo systemctl restart yourflaskapp.service
+Make it executable:
+
+### bash
+
+chmod +x /path/to/deploy.sh
+Schedule the Cron Job:
+Open your crontab:
+
+bash
+Copy
+Edit
+crontab -e
+And add a line like this to run the script every 5 minutes (adjust as needed):
+
+cron
+Copy
+Edit
+*/5 * * * * /path/to/deploy.sh >> /var/log/flask_deploy.log 2>&1
+This way, your server checks GitHub regularly for new commits and updates the code accordingly.

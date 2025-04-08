@@ -30,7 +30,7 @@ UPLOAD_FOLDER = 'app/static/uploads'
 
 @bp.route('/')
 def home():
-    return render_template('index.html', title='Home')
+    return render_template('home.html', title='Home')
 
 
 
@@ -91,7 +91,7 @@ def login():
         if check_password_hash(user.password, form.password.data):
             login_user(user)
             return redirect(url_for('main.home'))
-    return render_template('login.html', form=form, title='Login', heading='Login')
+    return render_template('signin.html', form=form, title='Login', heading='Login')
 
 
 
