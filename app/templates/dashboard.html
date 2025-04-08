@@ -1,0 +1,641 @@
+<!-- Sidebar -->
+<div class="sidebar">
+    <a class="navbar-brand mb-4 d-flex align-items-center justify-content-center" href="index.html">
+        <i class="fas fa-clipboard-check me-2"></i>
+        <span>ExamTrack</span>
+    </a>
+    
+    <hr class="sidebar-divider my-0 bg-white opacity-25">
+    
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" href="dashboard.html">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="exams.html">
+                <i class="fas fa-fw fa-calendar-alt"></i>
+                <span>Exams</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="attendance.html">
+                <i class="fas fa-fw fa-user-check"></i>
+                <span>Attendance</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="students.html">
+                <i class="fas fa-fw fa-user-graduate"></i>
+                <span>Students</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="reports.html">
+                <i class="fas fa-fw fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+        </li>
+        
+        <hr class="sidebar-divider bg-white opacity-25">
+        
+        <li class="nav-item">
+            <a class="nav-link" href="settings.html">
+                <i class="fas fa-fw fa-cogs"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="login.html">
+                <i class="fas fa-fw fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand navbar-light topbar mb-4">
+        <div class="container-fluid">
+            <!-- Sidebar Toggle -->
+            <button id="sidebarToggle" class="btn btn-link d-md-none">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Search -->
+            <form class="d-none d-sm-inline-block me-auto ms-md-3 my-2 my-md-0">
+                <div class="input-group">
+                    <input type="text" class="form-control bg-light border-0 small" placeholder="Search for...">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Topbar Navbar -->
+            <ul class="navbar-nav ms-auto">
+                <!-- Alerts -->
+                <li class="nav-item dropdown no-arrow mx-1">
+                    <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-fw"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3+</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="alertsDropdown">
+                        <h6 class="dropdown-header">Alerts Center</h6>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="me-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-muted">April 7, 2025</div>
+                                <span>New exam schedule has been published!</span>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="me-3">
+                                <div class="icon-circle bg-warning">
+                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-muted">April 6, 2025</div>
+                                <span>Low attendance rate in Physics Exam</span>
+                            </div>
+                        </a>
+                        <a class="dropdown-item text-center small text-muted" href="#">Show All Alerts</a>
+                    </div>
+                </li>
+                
+                <!-- Messages -->
+                <li class="nav-item dropdown no-arrow mx-1">
+                    <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-envelope fa-fw"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">7</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
+                        <h6 class="dropdown-header">Message Center</h6>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="dropdown-list-image me-3">
+                                <img class="rounded-circle" src="/api/placeholder/40/40" alt="User">
+                            </div>
+                            <div>
+                                <div class="text-truncate">I need to reschedule my exam due to medical reasons.</div>
+                                <div class="small text-muted">Sarah Johnson · 58m</div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item text-center small text-muted" href="#">Read More Messages</a>
+                    </div>
+                </li>
+                
+                <div class="topbar-divider d-none d-sm-block"></div>
+                
+                <!-- User Information -->
+                <li class="nav-item dropdown no-arrow">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <span class="d-none d-lg-inline text-gray-600 small me-2">Admin User</span>
+                        <img class="user-profile" src="/api/placeholder/40/40" alt="User">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>
+                            Settings
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>
+                            Activity Log
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="login.html">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                            Logout
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <a href="#" class="d-none d-sm-inline-block btn btn-gradient-primary shadow-sm">
+                <i class="fas fa-download fa-sm text-white-50 me-1"></i> Generate Report
+            </a>
+        </div>
+        
+        <!-- Content Row - Stats -->
+        <div class="row">
+            <!-- Exams Today -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow h-100 py-2 stat-card stat-primary">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <h4 class="text-primary">Exams Today</h4>
+                                <div class="stat-value">12</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Students Present -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow h-100 py-2 stat-card stat-success">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <h4 class="text-success">Students Present</h4>
+                                <div class="stat-value">85%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Absent Students -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow h-100 py-2 stat-card stat-warning">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <h4 class="text-warning">Absent Students</h4>
+                                <div class="stat-value">42</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-user-times fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Total Exams -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow h-100 py-2 stat-card stat-info">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <h4 class="text-info">Total Exams</h4>
+                                <div class="stat-value">128</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Row - Charts -->
+        <div class="row">
+            <!-- Attendance Chart -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Attendance Overview</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                <div class="dropdown-header">Options:</div>
+                                <a class="dropdown-item" href="#">Daily</a>
+                                <a class="dropdown-item" href="#">Weekly</a>
+                                <a class="dropdown-item" href="#">Monthly</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Export Data</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <div class="chart-container">
+                                <!-- Replace with actual chart -->
+                                <img src="/api/placeholder/800/300" alt="Attendance Chart" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Department Stats -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Department Stats</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                <div class="dropdown-header">Options:</div>
+                                <a class="dropdown-item" href="#">View All</a>
+                                <a class="dropdown-item" href="#">Export Data</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h4 class="small font-weight-bold">Computer Science <span class="float-end">92%</span></h4>
+                            <div class="attendance-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="small font-weight-bold">Physics <span class="float-end">85%</span></h4>
+                            <div class="attendance-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="small font-weight-bold">Mathematics <span class="float-end">78%</span></h4>
+                            <div class="attendance-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="small font-weight-bold">Chemistry <span class="float-end">62%</span></h4>
+                            <div class="attendance-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 62%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="small font-weight-bold">Biology <span class="float-end">70%</span></h4>
+                            <div class="attendance-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 70%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Row - Tables -->
+        <div class="row">
+            <!-- Upcoming Exams -->
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Upcoming Exams</h6>
+                        <a href="#" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Room</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Computer Networks</td>
+                                        <td>Apr 8, 2025</td>
+                                        <td>10:00 AM</td>
+                                        <td>Room 301</td>
+                                        <td><span class="badge bg-success badge-status">Ready</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Database Systems</td>
+                                        <td>Apr 9, 2025</td>
+                                        <td>1:00 PM</td>
+                                        <td>Room 205</td>
+                                        <td><span class="badge bg-warning badge-status">Pending</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Calculus II</td>
+                                        <td>Apr 10, 2025</td>
+                                        <td>9:00 AM</td>
+                                        <td>Hall A</td>
+                                        <td><span class="badge bg-info badge-status">Scheduled</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Physics 101</td>
+                                        <td>Apr 11, 2025</td>
+                                        <td>11:00 AM</td>
+                                        <td>Lab 2</td>
+                                        <td><span class="badge bg-info badge-status">Scheduled</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Artificial Intelligence</td>
+                                        <td>Apr 12, 2025</td>
+                                        <td>2:00 PM</td>
+                                        <td>Room 401</td>
+                                        <td><span class="badge bg-secondary badge-status">Draft</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Attendance -->
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Recent Attendance</h6>
+                        <a href="#" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Subject</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="d-flex align-items-center">
+                                            <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                            <span>Michael Brown</span>
+                                        </td>
+                                        <td>Data Structures</td>
+                                        <td>9:45 AM</td>
+                                        <td><span class="badge bg-success badge-status">Present</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d-flex align-items-center">
+                                            <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                            <span>Sarah Johnson</span>
+                                            <td class="d-flex align-items-center">
+                                                <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                                <span>Sarah Johnson</span>
+                                            </td>
+                                            <td>Organic Chemistry</td>
+                                            <td>9:50 AM</td>
+                                            <td><span class="badge bg-success badge-status">Present</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="d-flex align-items-center">
+                                                    <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                                    <span>David Wilson</span>
+                                                </td>
+                                                <td>Calculus I</td>
+                                                <td>10:02 AM</td>
+                                                <td><span class="badge bg-success badge-status">Present</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="d-flex align-items-center">
+                                                    <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                                    <span>Jennifer Taylor</span>
+                                                </td>
+                                                <td>Physics 201</td>
+                                                <td>10:15 AM</td>
+                                                <td><span class="badge bg-danger badge-status">Absent</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="d-flex align-items-center">
+                                                    <img src="/api/placeholder/32/32" class="rounded-circle me-2" alt="Student">
+                                                    <span>Robert Martinez</span>
+                                                </td>
+                                                <td>Database Systems</td>
+                                                <td>10:30 AM</td>
+                                                <td><span class="badge bg-warning badge-status">Late</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                            
+                                            <!-- Content Row - Recent Activity & Quick Actions -->
+                                            <div class="row">
+                                                <!-- Recent Activity -->
+                                                <div class="col-lg-6">
+                                                    <div class="card shadow mb-4">
+                                                        <div class="card-header py-3">
+                                                            <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="timeline">
+                                                                <div class="timeline-item mb-3 d-flex">
+                                                                    <div class="timeline-icon me-3 bg-primary text-white rounded-circle p-2">
+                                                                        <i class="fas fa-user-check"></i>
+                                                                    </div>
+                                                                    <div class="timeline-content">
+                                                                        <h6 class="fw-bold mb-1">Attendance recorded for Computer Networks exam</h6>
+                                                                        <p class="text-muted small mb-0">Today, 8:30 AM · 85% attendance rate</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="timeline-item mb-3 d-flex">
+                                                                    <div class="timeline-icon me-3 bg-warning text-white rounded-circle p-2">
+                                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                                    </div>
+                                                                    <div class="timeline-content">
+                                                                        <h6 class="fw-bold mb-1">Low attendance alert for Physics 101</h6>
+                                                                        <p class="text-muted small mb-0">Yesterday, 2:15 PM · 62% attendance rate</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="timeline-item mb-3 d-flex">
+                                                                    <div class="timeline-icon me-3 bg-info text-white rounded-circle p-2">
+                                                                        <i class="fas fa-calendar-plus"></i>
+                                                                    </div>
+                                                                    <div class="timeline-content">
+                                                                        <h6 class="fw-bold mb-1">New exam scheduled: Advanced Databases</h6>
+                                                                        <p class="text-muted small mb-0">Yesterday, 11:30 AM · Room 305</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="timeline-item mb-3 d-flex">
+                                                                    <div class="timeline-icon me-3 bg-success text-white rounded-circle p-2">
+                                                                        <i class="fas fa-file-export"></i>
+                                                                    </div>
+                                                                    <div class="timeline-content">
+                                                                        <h6 class="fw-bold mb-1">Monthly attendance report generated</h6>
+                                                                        <p class="text-muted small mb-0">Apr 5, 2025 · 9:00 AM</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="timeline-item d-flex">
+                                                                    <div class="timeline-icon me-3 bg-secondary text-white rounded-circle p-2">
+                                                                        <i class="fas fa-user-plus"></i>
+                                                                    </div>
+                                                                    <div class="timeline-content">
+                                                                        <h6 class="fw-bold mb-1">5 new students added to the system</h6>
+                                                                        <p class="text-muted small mb-0">Apr 4, 2025 · 3:45 PM</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Quick Actions -->
+                                                <div class="col-lg-6">
+                                                    <div class="card shadow mb-4">
+                                                        <div class="card-header py-3">
+                                                            <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row g-3">
+                                                                <div class="col-md-6">
+                                                                    <div class="card border-left-primary h-100 py-2">
+                                                                        <div class="card-body">
+                                                                            <div class="row no-gutters align-items-center">
+                                                                                <div class="col-auto">
+                                                                                    <i class="fas fa-calendar-plus fa-2x text-gray-300 me-3"></i>
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                                                        Schedule Exam
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="card border-left-success h-100 py-2">
+                                                                        <div class="card-body">
+                                                                            <div class="row no-gutters align-items-center">
+                                                                                <div class="col-auto">
+                                                                                    <i class="fas fa-qrcode fa-2x text-gray-300 me-3"></i>
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                                                        Take Attendance
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="card border-left-info h-100 py-2">
+                                                                        <div class="card-body">
+                                                                            <div class="row no-gutters align-items-center">
+                                                                                <div class="col-auto">
+                                                                                    <i class="fas fa-file-export fa-2x text-gray-300 me-3"></i>
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                                                        Generate Report
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="card border-left-warning h-100 py-2">
+                                                                        <div class="card-body">
+                                                                            <div class="row no-gutters align-items-center">
+                                                                                <div class="col-auto">
+                                                                                    <i class="fas fa-user-plus fa-2x text-gray-300 me-3"></i>
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                                                        Add Student
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mt-4">
+                                                                <h6 class="font-weight-bold">Recent Notifications</h6>
+                                                                <div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
+                                                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                                                    <div>
+                                                                        Low attendance detected in Physics 101 exam. Consider sending reminders.
+                                                                    </div>
+                                                                </div>
+                                                                <div class="alert alert-info d-flex align-items-center" role="alert">
+                                                                    <i class="fas fa-info-circle me-2"></i>
+                                                                    <div>
+                                                                        3 new exams have been scheduled for next week.
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+    <script>
+        // Toggle sidebar on mobile
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+
+    </script>     
+    
+    
+
+
+
+
+    
+
