@@ -77,7 +77,7 @@ def register():
         db.session.commit()
         flash(f'User {form.email.data} created.', 'success')
         return redirect(url_for('main.login'))
-    return render_template('register.html', title='Login', heading='Register', form=form)
+    return render_template('signup.html', title='Sign Up', heading='Register', form=form)
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -101,7 +101,6 @@ def logout():
     logout_user()  # This is enough to log the user out
     session.clear()  # Clears the session data safely
     return redirect(url_for('main.home'))
-
 
 
 
@@ -145,27 +144,23 @@ def add_department():
     return render_template('register.html', form=form)
 
 
+
 @bp.route('/report/')
 def report():
     session_id = request.args.get('session_id')
-    session = ExamSession.query.get_or_404(session_id)
+    session = Session.query.get_or_404(session_id)
     attendances = Attendance.query.filter_by(session_id=session_id).all()
     return render_template('report.html', session=session, attendances=attendances)
 
 
-@bp.route('/programmes/create', methods=['GET', 'POST'])
-def create_programmes():
-    for i in ksb_programmes:
-        if not Programme.query.filter_by(name=i['name']).first():
-            db.session.add(
-                Programme(
-                    name=i['name'],
-                    year_group=i['year']
-                )
-            )
-    db.session.commit()
-    return redirect(url_for('main.home'))
 
+@bp.route('/get-date-session', methods=['GET', 'POST'])
+def get_date_session():
+    form = DateSessionForm()
+    if form.validate_on_submit():
+        # Process form data here if needed
+        return redirect(url_for('main.staff_attendance'))
+    return render_template('narrow_form.html', title='Get Date Session', heading='Select Date and Session', form=form)
 
 
 @bp.route('/exam/create-exam', methods=['GET', 'POST'])
@@ -187,7 +182,7 @@ def create_exam():
         db.session.add(exam)
         db.session.commit()
         return redirect(url_for('main.home'))
-    return render_template('form.html', form=form, title='Schedule Exam', heading='Create Exam')
+    return render_template('create_exam.html', form=form, title='Schedule Exam', heading='Create Exam')
 
 
 
@@ -195,6 +190,7 @@ def create_exam():
 def view_exams():
     exams = Exam.query.all()
     return render_template('view_exams.html', title='View Exams', heading='View Exams', exams=exams)
+
 
 
 @bp.route('/exam/edit/<int:exam_id>', methods=['GET', 'POST'])
@@ -230,6 +226,7 @@ def edit_exam(exam_id):
     return render_template('form.html', title='Create Schedule', heading='Create Schedule', form=form)
 
 
+
 @bp.route('/exam/delete/<int:exam_id>', methods=['GET', 'POST'])
 def delete_exam(exam_id):
     exam = Exam.query.get_or_404(exam_id)
@@ -240,24 +237,6 @@ def delete_exam(exam_id):
     db.session.commit()
     return redirect(url_for('main.view_exams'))
 
-
-
-@bp.route('/courses/create', methods=['GET', 'POST'])
-def create_courses():
-    df = pd.read_excel(f'{UPLOAD_FOLDER}/courses.xlsx', header=0)
-    for idx,row in df.iterrows():
-        course_code = row['code'].strip()
-        title = row['title'].strip()
-        # print(course_code)
-        if not Course.query.filter_by(course_code=course_code).first():
-            new_course = Course(
-                course_code=course_code,
-                title=title
-            )
-            db.session.add(new_course)
-    db.session.commit() # Commit all new courses after the loop
-    flash('Courses created successfully from Excel file.', 'success') # Optional: Add a success message
-    return redirect(url_for('main.home'))
 
 
 @bp.route('/course/create', methods=['GET', 'POST'])
@@ -279,6 +258,27 @@ def create_course():
     return render_template('login.html', title='Create Course', heading='Create Course', form=form)
 
 
+@bp.route('/courses/create', methods=['GET', 'POST'])
+def create_courses():
+    data = cohss_courses
+    for key,val in data.items():
+        course_code = key.strip()
+        title = val.strip()
+        # print(course_code)
+        if not Course.query.filter_by(course_code=course_code).first():
+            new_course = Course(
+                course_code=course_code,
+                title=title
+            )
+            db.session.add(new_course)
+    db.session.commit() # Commit all new courses after the loop
+    flash('CoHSS courses created successfully.', 'success') # Optional: Add a success message
+    return redirect(url_for('main.home'))
+
+
+
+
+
 @bp.route('/user/create-title', methods=['GET', 'POST'])
 def create_title():
     form = TitleForm()
@@ -292,6 +292,7 @@ def create_title():
             flash('Title created.', 'success')
             return redirect(url_for('main.home'))
     return render_template('login.html', title='Create Title', heading='Create Title', form=form)
+
 
 
 @bp.route('/user/create', methods=['GET', 'POST'])
@@ -328,19 +329,19 @@ def create_users():
 
         # Skip creating user if already exists
         if User.query.filter_by(surname=surname.upper(), first_name=first_name).first():
-            flash(f"User {first_name} {surname} already exists!", "warning")
+            #flash(f"User {first_name} {surname} already exists!", "warning")
             continue
 
         # Get Category
         category = Category.query.filter_by(name=staff_category_str).first()
         if not category:
-            flash('Category does not exist', 'warning')
+            #flash('Category does not exist', 'warning')
             continue
 
         # Get Department
         department = Department.query.filter_by(name=department_str).first()
         if not department:
-            flash('Department does not exist', 'warning')
+            #flash('Department does not exist', 'warning')
             continue
 
         title_obj = Title.query.filter_by(title=title_str).first()
@@ -371,109 +372,72 @@ def create_users():
     db.session.commit()
     flash("Users created successfully!", "success")
     return redirect(url_for('main.home'))
+  
 
-
-
-@bp.route('/departments/create', methods=['GET', 'POST'])
-def create_departments():
-    df = pd.read_excel(
-        f'{UPLOAD_FOLDER}/list.xlsx',
-        header=0,
-        dtype={
-            'title': str,
-            'surname': str,
-            'first_name': str,
-            'department': str,
-            'category': str,
-            'role': str  # Ensure 'role' is read as string
-        }
-    )
-    for index, row in df.iterrows():
-        # Extract values; strip where applicable
-        department_str = row['department'].strip()
-
-        # Get Department
-        if not Department.query.filter_by(name=department_str).first():
-            db.session.add(
-                Department(name=department_str))
-            db.session.commit()
-    flash('Department created', 'success')
-    return redirect(url_for('main.home'))        
-
-
-@bp.route('/days/create', methods=['GET', 'POST'])
-def create_days():
-    for i in range(1,22):
-        day_name = f'Day {i}'
-        # Check if the day already exists
-        if not Day.query.filter_by(name=day_name).first():
-            # Add the day if it doesn't exist
-            db.session.add(
-                Day(name=day_name)
-            )
-        else:
-        # Optionally, inform the user that all days already existed
-            flash('All required days already exist.', 'info')
-    db.session.commit()
-    return redirect(url_for('main.home'))
 
 
 
 @bp.route('/session/create', methods=['GET', 'POST'])
 def create_session():
-    form = ExamSessionForm()
+    form = SessionForm()
     if form.validate_on_submit():
         name = form.name.data
         date = form.date.data
-        day_id = form.day_id.data.id
         academic_year_id = form.academic_year.data.id
         semester_id = form.semester.data.id
         exam_type_id = form.exam_type.data.id
-        start_time = form.start_time.data
-        end_time = form.end_time.data
-        print(f"{day_id}: {academic_year_id} | {semester_id} | {exam_type_id} ")
-        if not ExamSession.query.filter_by(name=name, date=date).first():
+        start_time = form.start_time.data#.strftime('%H:%M')
+        end_time = form.end_time.data#.strftime('%H:%M')
+        print(f"{start_time} -- {end_time}")
+        if not Session.query.filter_by(name=name, date=date).first():
             db.session.add(
-                ExamSession(
-                    name=name, date=date, day_id=day_id, academic_year_id=academic_year_id,
-                    semester_id=semester_id , exam_type_id=exam_type_id, start_time=start_time, end_time=end_time        
+                Session(
+                    name=name, date=date, academic_year_id=academic_year_id,
+                    semester_id=semester_id, exam_type_id=exam_type_id, 
+                    start_time=start_time, end_time=end_time        
                 )
             )
             db.session.commit()
             flash('Session created successfully.', 'success')
-            #return redirect(url_for('main.home'))
-    return render_template('login.html', title='Create Session', heading="Create Session", form=form)
+
+    return render_template('narrow_form.html', title='Create Session', heading="Create Session", form=form)
 
 
 
-@bp.route('/sessions/view', methods=['GET', 'POST'])
-def view_session():
-    form = ExamSessionForm()
-    sessions = ExamSession.query.order_by(ExamSession.id).all()
-    return render_template('login.html', title='View Session', heading="Exam Sessions", form=form, sessions=sessions)
+@bp.route('/session/view', methods=['GET', 'POST'])
+def view_exam_session():
+    form = DateForm()
+    sessions = Session.query.order_by(Session.id).all()
+    return render_template('narrow_form.html', title='Choose', heading="Choose Date", form=form,)
+
+
+
+@bp.route('/sessions/daily')
+def daily_exam_sessions():
+    form = DateForm()
+    return render_template('narrow_form.html', title='Choose', heading="Choose Date", form=form,)
+
 
 
 @bp.route('/session/edit/<int:session_id>', methods=['GET', 'POST'])
 def edit_session(session_id):
-    session = ExamSession.query.get(session_id)
-    form = ExamSession()
+    session = Session.query.get(session_id)
+    form = Session()
     form.data.data = session.data
     form.start_time.data = session.start_time
     form.end_time.data = session.end_time
     if form.validate_on_submit():
         name = form.name.data
         date = form.date.data
-        day_id = form.day_id.data.id
         academic_year_id = form.academic_year.data.id
         semester_id = form.semester.data.id
         exam_type_id = form.exam_type.data.id
         start_time = form.start_time.data
         end_time = form.end_time.data
-        print(f"{day_id}: {academic_year_id} | {semester_id} | {exam_type_id} ")
-        if not ExamSession.query.filter_by(name=name, date=date).first():
+        if not Session.query.filter_by(name=name, date=date).first():
             db.session.add(
-                ExamSession(
-                    name=name, date=date, day_id=day_id, academic_year_id=academic_year_id,
+                Session(
+                    name=name, date=date, academic_year_id=academic_year_id,
                     semester_id=semester_id , exam_type_id=exam_type_id, start_time=start_time, end_time=end_time        
                 )
             )
@@ -484,62 +448,55 @@ def edit_session(session_id):
 
 
 
-@bp.route('/sessions/create', methods=['GET', 'POST'])
-def create_sessions():
-    for idx, i in enumerate(session_data):
-        day_number = i['day']
-        day = Day.query.filter_by(name=day_number.strip()).first()
-        if day and not ExamSession.query.filter_by(name=i['name']).first():
-            # Convert time strings to datetime.time objects
-            date = datetime.strptime(i['date'], '%d-%m-%Y').date()
-            start_time_obj = datetime.strptime(i['start_time'], '%H:%M:%S').time()
-            end_time_obj = datetime.strptime(i['end_time'], '%H:%M:%S').time()
-            db.session.add(
-                ExamSession(
-                    name=i['name'],
-                    start_time=start_time_obj,
-                    end_time=end_time_obj,
-                    day_id=day.id, 
-                    date=date
-                )
-            )
-            #print(f"{start_time_obj} -- {end_time_obj}")
-    db.session.commit()
-    return redirect(url_for('main.home'))
 
-
-
-@bp.route('/venues/create', methods=['GET', 'POST'])
+#@bp.route('/venues/create', methods=['GET', 'POST'])
 def create_venues():
     for i in rooms:
         if not Venue.query.filter_by(name=i).first():
             db.session.add(
                 Venue(name=i)
                 )
-        else:
-            flash("Venue exists!", 'warning')
     db.session.commit()
-    return redirect(url_for('main.home'))
+    return 0
+   
 
 
 
-@bp.route('/schedule/create', methods=['GET', 'POST'])
-def create_schedule():
-    form = ScheduleForm()
+@bp.route('/biometric-schedule', methods=['GET', 'POST'])
+def biometric_schedule():
+    form = BiometricScheduleForm()
+    
+    # Get venues for the JavaScript dropdown population
+    venues = Venue.query.all()
+    venue_list = [{'id': venue.id, 'name': venue.name} for venue in venues]
+    
     if form.validate_on_submit():
-        schedule = Schedule(session_id=form.session.data.id)
-        db.session.add(schedule)    
-        for staff in form.staff.data:
-            schedule.staff.append(staff)
+        # Process form data
+        session_id = form.session.data.id
+        
+        # Delete existing assignments for this session (if updating)
+        # BiometricSchedule.query.filter_by(session_id=session_id).delete()
+        
+        # Save each venue-staff pair
+        for pair in form.venue_staff_pairs:
+            if pair.form.venue.data and pair.form.staff.data:
+                schedule = Biometric(
+                    session_id=session_id,
+                    venue_id=pair.form.venue.data.id,
+                    staff_id=pair.form.staff.data.id
+                )
+                db.session.add(schedule)
+        
         db.session.commit()
-        flash('Schedule created successfully.', 'success')
-        return redirect(url_for('main.create_schedule'))
-    return render_template('form.html', title='Create Schedule', heading='Create Schedule', form=form)
+        flash('Biometric schedule saved successfully!', 'success')
+        return redirect(url_for('main.home'))
+    
+    return render_template('schedule_form.html', title='Create Schedule', heading='Create Schedule', form=form)
 
 
 
 
-@bp.route('/staff/attendance', methods=['GET', 'POST'])
+@bp.route('/year/create', methods=['GET', 'POST'])
 def create_academic_year():
     form =  AcademicYearForm()
     if form.validate_on_submit():
@@ -552,7 +509,9 @@ def create_academic_year():
             db.session.commit()
             flash('Academic year created.', 'success')
             return redirect(url_for('main.home'))
-    return render_template('login.html', title='Academic year', heading='Create Academic Year', form=form)
+    return render_template('narrow_form.html', title='Academic year', heading='Create Academic Year', form=form)
+
+
 
 
 
@@ -602,6 +561,12 @@ def staff_attendance():
 
 
 
+
+
+
+# ###########################
+###### AJAX STUFF
+
 # Route to search staff members
 @bp.route('/search_staff')
 def search_staff():
@@ -641,8 +606,8 @@ def get_sessions():
             parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
             
             # Get sessions for the specified date
-            sessions = ExamSession.query.filter(
-                db.func.date(ExamSession.date) == parsed_date
+            sessions = Session.query.filter(
+                db.func.date(Session.date) == parsed_date
             ).all()
             
             # Format the sessions for the dropdown
@@ -655,6 +620,101 @@ def get_sessions():
             # Invalid date format
             return jsonify({'error': 'Invalid date format'}), 400
     return jsonify([])
+
+
+
+
+#############################
+# ##### PREREQUISITES ######
+
+
+#@bp.route('/programmes/create', methods=['GET', 'POST'])
+def create_programmes():
+    for i in ksb_programmes:
+        if not Programme.query.filter_by(name=i['name']).first():
+            db.session.add(
+                Programme(
+                    name=i['name'],
+                    year_group=i['year']
+                )
+            )
+    db.session.commit()
+    #return redirect(url_for('main.home'))
+    return 0
+
+
+
+#@bp.route('/departments/create', methods=['GET', 'POST'])
+def create_departments():
+    df = pd.read_excel(
+        f'{UPLOAD_FOLDER}/list.xlsx',
+        header=0,
+        dtype={
+            'title': str,
+            'surname': str,
+            'first_name': str,
+            'department': str,
+            'category': str,
+            'role': str  # Ensure 'role' is read as string
+        }
+    )
+    for index, row in df.iterrows():
+        # Extract values; strip where applicable
+        department_str = row['department'].strip()
+
+        # Get Department
+        if not Department.query.filter_by(name=department_str).first():
+            db.session.add(
+                Department(name=department_str))
+            db.session.commit()
+    #flash('Department created', 'success')
+    return 0      
+
+
+
+def create_prerequisites():
+    create_programmes()
+    create_departments()
+    create_courses()
+    create_users()
+    create_venues()
+    return 0
+
+
+
+@bp.route('/sessions/create', methods=['GET', 'POST'])
+def create_sessions():
+    return redirect(url_for('main.home'))
+
+
+
+
+
+
+"""
+#@bp.route('/courses/create', methods=['GET', 'POST'])
+def create_courses():
+    df = pd.read_excel(f'{UPLOAD_FOLDER}/courses.xlsx', header=0)
+    for idx,row in df.iterrows():
+        course_code = row['code'].strip()
+        title = row['title'].strip()
+        # print(course_code)
+        if not Course.query.filter_by(course_code=course_code).first():
+            new_course = Course(
+                course_code=course_code,
+                title=title
+            )
+            db.session.add(new_course)
+    db.session.commit() # Commit all new courses after the loop
+    #flash('Courses created successfully from Excel file.', 'success') # Optional: Add a success message
+    #return redirect(url_for('main.home'))
+    return 0
+
+
+
+"""
+
+
 
 
 

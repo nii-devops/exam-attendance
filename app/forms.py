@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, SelectField, PasswordField, EmailField, SelectMultipleField, 
-                     DateField, TimeField, HiddenField)
+                     DateField, TimeField, HiddenField, FieldList, FormField, FloatField)
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from app.models import *
@@ -8,8 +8,9 @@ from app.data import titles
 from flask import request
 
 
+##############################
+# ### MODEL QUERIES #########
 
-"""
 def category_query():
     # Returns a query object for all categories
     return Category.query
@@ -21,10 +22,13 @@ def department_query():
 def exam_query():
     return Exam.query
 
-def staff_query():
+def biometric_staff_query():
     # return User.query.filter(User.role == 'Biometric Staff (IT)')
     return User.query.filter(User.role == 'Biometric Staff (IT)') # Or simply return all users for now
-"""
+
+def session_query():
+    return Session.query.all()
+
 
 
 
@@ -90,9 +94,30 @@ class TitleForm(FlaskForm):
 
 
 
+class DateForm(FlaskForm):
+    date = DateField('Date', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+
+class DateSessionForm(FlaskForm):
+    date = DateField('Date', validators=[DataRequired()], render_kw={'id': 'date'})
+
+    session = QuerySelectField(
+        'Session',
+        query_factory=session_query,
+        get_label='title',
+        allow_blank=False,
+        validators=[DataRequired()],
+        render_kw={'id': 'session'}
+    )
+    submit = SubmitField('Submit')
+
+
 class ExcelFileForm(FlaskForm):
     filename = SelectField('Rank ID', choices=[], validators=[DataRequired()])
     submit = SubmitField('Submit')
+
 
 
 class PasswordResetForm(FlaskForm):
@@ -147,6 +172,7 @@ class CategoryForm(FlaskForm):
     submit = SubmitField('Create')
 
 
+
 class DepartmentForm(FlaskForm):
     name = StringField('Department Name', validators=[DataRequired()])
     submit = SubmitField('Create')
@@ -158,15 +184,15 @@ class ExamForm(FlaskForm):
     #date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
     session = QuerySelectField(
         'Session',
-        query_factory=lambda: ExamSession.query.all(),
-        get_label=lambda s: f'{s.name} - {s.start_time}',
+        query_factory=lambda: Session.query.all(),
+        get_label=lambda s: f"{s.name} - {s.date}",
         allow_blank=False,
         render_kw={'size': 6}
     )
     course = QuerySelectField(
         'Course',
         query_factory=lambda: Course.query.order_by(Course.course_code).all(),
-        get_label=lambda c: f"{c.course_code} - {c.title}",
+        get_label=lambda c: f"{c.course_code} || {c.title}",
         allow_blank=False,
         render_kw={'size': 6}
     )
@@ -185,20 +211,24 @@ class ExamForm(FlaskForm):
     submit = SubmitField('Schedule Exam')
 
 
+class AllowanceForm(FlaskForm):
+    Category = QuerySelectField(
+        'Staff Category',
+        query_factory=lambda: Category.query.order_by(Category.id).all(),
+        get_label='name',
+        validators=[DataRequired()],
+        allow_blank=False,
+        render_kw={'size': 3}
+    )
+    rate = FloatField("Rate", validators=[DataRequired()], render_kw={"placeholder": "Enter an amount"})
+    submit = SubmitField('Set Rate')
 
 
-class ExamSessionForm(FlaskForm):
+
+class SessionForm(FlaskForm):
     name = StringField('Session Name', validators=[DataRequired()])
     
-    day_id = QuerySelectField(
-        'Day',
-        query_factory=lambda: Day.query.order_by(Day.id).all(),
-        get_label='name',
-        allow_blank=False,
-        render_kw={'size': 5}
-    )
-
-    date = DateField("Date")
+    date = DateField("Date", validators=[DataRequired()], format='%Y-%m-%d')
 
     start_time = TimeField(
         'Start Time',
@@ -227,7 +257,7 @@ class ExamSessionForm(FlaskForm):
         get_label='semester',
         validators=[DataRequired()],
         allow_blank=False,
-        render_kw={'size': 3}
+        render_kw={'size': 2}
     )
 
     exam_type = QuerySelectField(
@@ -254,8 +284,8 @@ class ScheduleForm(FlaskForm):
     """Form for creating or editing a Schedule."""
     session = QuerySelectField(
         'Session',
-        query_factory=lambda: ExamSession.query.all(),
-        get_label='name',
+        query_factory=lambda: Session.query.all(),
+        get_label=lambda s: f"{s.name} - {s.date}",
         allow_blank=False,
         description='Select the session for this schedule.'
     )
@@ -284,7 +314,11 @@ class ScheduleForm(FlaskForm):
         query_factory=get_venues,
         get_label='name',
         allow_blank=True,
-        description='Select venue(s) for this schedule.'
+        description='Select venue(s) for this schedule.',
+        render_kw={
+            'class': 'inline-field',
+            'style': 'display: inline-block; width: 45%; margin-right: 5%;'
+        }
     )
 
     staff = QuerySelectMultipleField(
@@ -292,19 +326,121 @@ class ScheduleForm(FlaskForm):
         query_factory=lambda: User.query.filter(User.role == 'Biometric Staff - IT').all(),
         get_label=lambda user: f"{user.first_name} {user.surname}",
         allow_blank=True,
-        description='Select one or more staff members to assign.'
+        description='Select one or more staff members to assign.',
+        render_kw={
+            'class': 'inline-field',
+            'style': 'display: inline-block; width: 45%;'
+        }
     )
 
     submit = SubmitField('Save Schedule')
 
 
+
+class VenueStaffForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        # Extract the index from kwargs before calling super
+        self.index = kwargs.pop('index', None)
+        super(VenueStaffForm, self).__init__(*args, **kwargs)
+        
+        # Set dynamic labels using the index if provided
+        if self.index is not None:
+            self.venue.label.text = f'Venue {self.index}'
+            self.staff.label.text = f'Staff {self.index}'
+
+    venue = QuerySelectField(
+        'Venue',  # Default label
+        query_factory=lambda: Venue.query.all(),  # Added this line to fix the error
+        get_label='name',
+        allow_blank=True,
+        render_kw={'class': 'form-control venue-field'}
+    )
+    staff = QuerySelectField(
+        'Staff',  # Default label
+        query_factory=lambda: User.query.filter(User.role == 'Biometric Staff - IT').all(),
+        get_label=lambda user: f"{user.first_name} {user.surname}",
+        allow_blank=True,
+        render_kw={'class': 'form-control'}
+    )
+
+
+class BiometricScheduleForm(FlaskForm):
+    session = SelectField('Session', validators=[DataRequired()], choices=[])  
+    # Optionally, include a hidden field to track the number of dynamic pairs
+    pair_count = HiddenField('Pair Count')
+
+
+
+
+
+
 """
+class BiometricScheduleForm(FlaskForm):
+    '''Form for creating or editing a Schedule.'''
+    session = QuerySelectField(
+        'Session',
+        query_factory=lambda: Session.query.all(),
+        get_label=lambda s: f"{s.name} - {s.date}",
+        allow_blank=False,
+        description='Select the session for this schedule.'
+    )
+
+    # Define a query factory that filters venues based on the selected session
+    def get_venues():
+        # Default empty query if no session selected or in initial form state
+        if not getattr(request, 'form', None) or 'session' not in request.form:
+            return Venue.query.filter(Venue.id == None)  # Empty result
+        
+        session_id = int(request.form.get('session'))
+        # Get all exams for this session
+        exams = Exam.query.filter_by(session_id=session_id).all()
+        
+        # Collect venue IDs from all exams in this session
+        venue_ids = set()
+        for exam in exams:
+            for venue in exam.venues:
+                venue_ids.add(venue.id)
+        
+        # Query all venues with these IDs
+        return Venue.query.filter(Venue.id.in_(venue_ids)).all() if venue_ids else []
+
+    # Create a list to store venue-staff pairs
+    venue_staff_pairs = []
+    
+    # Add initial 3 pairs
+    for i in range(3):
+        venue = QuerySelectField(
+            f'Venue {i+1}',
+            query_factory=get_venues,
+            get_label='name',
+            allow_blank=True,
+            render_kw={
+                'class': 'inline-field venue-field',
+                'style': 'display: inline-block; width: 45%; margin-right: 5%;'
+            }
+        )
+        staff = QuerySelectField(
+            f'Staff {i+1}',
+            query_factory=lambda: User.query.filter(User.role == 'Biometric Staff - IT').all(),
+            get_label=lambda user: f"{user.first_name} {user.surname}",
+            allow_blank=True,
+            render_kw={
+                'class': 'inline-field staff-field',
+                'style': 'display: inline-block; width: 45%;'
+            }
+        )
+        venue_staff_pairs.append((venue, staff))
+
+    submit = SubmitField('Save Schedule')
+
+
+
 
 class ScheduleForm(FlaskForm):
     # Form for creating or editing a Schedule.
     session = QuerySelectField(
         'Session',
-        query_factory=lambda: ExamSession.query.all(),
+        query_factory=lambda: Session.query.all(),
         get_label='name', # Display the exam title in the dropdown
         allow_blank=False, # Require an exam to be selected
         description='Select the session for this schedule.'
@@ -345,7 +481,7 @@ class AttendanceForm(FlaskForm):
     # Provide a default callable for the session field
     session = QuerySelectField(
         'Session',
-        query_factory=lambda: ExamSession.query.all(),
+        query_factory=lambda: Session.query.all(),
         get_label=lambda s: f"{s.name} - {s.start_time}",
         allow_blank=False,
         render_kw={'size': 6, 'id': 'session_field'}
@@ -380,18 +516,18 @@ class AttendanceForm(FlaskForm):
         super(AttendanceForm, self).__init__(*args, **kwargs)
         # Override the query_factory based on selected_date
         if selected_date:
-            self.session.query_factory = lambda: ExamSession.query.filter(
-                db.func.date(ExamSession.date) == selected_date
+            self.session.query_factory = lambda: Session.query.filter(
+                db.func.date(Session.date) == selected_date
             ).all()
         else:
-            self.session.query_factory = lambda: ExamSession.query.all()
+            self.session.query_factory = lambda: Session.query.all()
 
 
 class SessionFilterForm(FlaskForm):
     date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
     session = QuerySelectField(
         'Session',
-        query_factory=lambda: ExamSession.query.all(),
+        query_factory=lambda: Session.query.all(),
         get_label=lambda s: f"{s.name} - {s.start_time}",
         allow_blank=False,
         render_kw={'size': 6, 'id': 'session_field'}
@@ -485,7 +621,7 @@ class ExamForm(FlaskForm):
         super(ExamForm, self).__init__(*args, **kwargs)
         self.day.choices = [(d.id, d.name) for d in Day.query.all()]
         # Session choices will be updated dynamically based on day selection
-        self.session.choices = [(s.id, f'{s.name} - {s.start_time}') for s in ExamSession.query.all()]
+        self.session.choices = [(s.id, f'{s.name} - {s.start_time}') for s in Session.query.all()]
         self.course.choices = [(c.id, f"{c.course_code} - {c.title}") for c in Course.query.order_by(Course.course_code).all()]
         self.programmes.choices = [(p.id, f"{p.name} - Year {p.year_group}") for p in Programme.query.order_by(Programme.name).all()]
         self.venues.choices = [(v.id, v.name) for v in Venue.query.order_by(Venue.name).all()]
@@ -493,7 +629,7 @@ class ExamForm(FlaskForm):
 
 
 
-class ExamSessionForm(FlaskForm):
+class SessionForm(FlaskForm):
     name = StringField('Session Name', validators=[DataRequired()])
     day_id = SelectField('Day', coerce=int, render_kw={'size': 5})
     date = DateField("Date")
@@ -508,7 +644,7 @@ class ExamSessionForm(FlaskForm):
 
     # Add __init__ to populate choices
     def __init__(self, *args, **kwargs):
-        super(ExamSessionForm, self).__init__(*args, **kwargs)
+        super(SessionForm, self).__init__(*args, **kwargs)
         # Populate choices from models
         self.day_id.choices = [(d.id, d.name) for d in Day.query.order_by(Day.id).all()]
         self.academic_year_id.choices = [(ay.id, ay.year) for ay in AcademicYear.query.order_by(AcademicYear.id).all()]
@@ -536,7 +672,7 @@ class AttendanceForm(FlaskForm):
         super(AttendanceForm, self).__init__(*args, **kwargs)
         self.day.choices = [(d.id, d.name) for d in Day.query.all()]
         # Session choices will be updated dynamically based on day selection
-        self.session.choices = [(s.id, f'{s.name} - {s.start_time}') for s in ExamSession.query.all()]
+        self.session.choices = [(s.id, f'{s.name} - {s.start_time}') for s in Session.query.all()]
         self.course.choices = [(c.id, f"{c.course_code} - {c.title}") for c in Course.query.order_by(Course.course_code).all()]
         self.programmes.choices = [(p.id, f"{p.name} - Year {p.year_group}") for p in Programme.query.order_by(Programme.name).all()]
         self.venues.choices = [(v.id, v.name) for v in Venue.query.order_by(Venue.name).all()]

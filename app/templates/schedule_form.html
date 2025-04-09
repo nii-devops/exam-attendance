@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+    <div  class="login-card col-lg-8 col-md-6 col-sm-10">
+            <div class=" login-form">
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">{{heading}}</h3>
+                    <hr class="my-4">
+                </div>
+                
+               <div>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.session.label }}
+                        {{ form.session }}
+                        {% if form.session.errors %}
+                            <div class="text-danger">
+                                {% for error in form.session.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    <h4>Venue and Staff Assignments</h4>
+                    
+                    <div id="venue-staff-container">
+                        <!-- This will contain the venue-staff pairs -->
+                        {% for pair in form.venue_staff_pairs %}
+                            <div class="venue-staff-pair row mb-3">
+                                <div class="col-md-5">
+                                    {{ pair.form.venue.label }}
+                                    {{ pair.form.venue }}
+                                </div>
+                                <div class="col-md-5">
+                                    {{ pair.form.staff.label }}
+                                    {{ pair.form.staff }}
+                                </div>
+                                {% if loop.index > 1 %}
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger remove-pair">Remove</button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row mt-3 mb-4">
+                        <div class="col-12">
+                            <button type="button" id="add-pair" class="btn btn-secondary">Add Venue-Staff Pair</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.submit }}
+                    </div>
+                </form>
+               </div>
+               <hr class="my-4">
+                <div class="text-center mt-4">
+                    <p class="mb-0">Staff not found? <a href="{{url_for('main.register_user')}}" class=" btn btn-sm btn-outline-primary fw-bold">Add Staff</a></p>
+                </div>
+                
+            </div>
+
+    </div>
+</div>
+
+
+{% endblock content %}
+
+{% block scripts %}
+ 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('venue-staff-container');
+        const addButton = document.getElementById('add-pair');
+        
+        // Initialize venue data for the dropdowns - with safer fallback
+        let venueOptions = [];
+        {% if venue_list %}
+            venueOptions = {{ venue_list|tojson }};
+        {% endif %}
+        
+        addButton.addEventListener('click', function() {
+            // Count existing pairs to determine the next index
+            const pairCount = container.querySelectorAll('.venue-staff-pair').length;
+            const newIndex = pairCount + 1;
+            
+            // Create a new pair element
+            const newPair = document.createElement('div');
+            newPair.className = 'venue-staff-pair row mb-3';
+            
+            // Clone the first pair's HTML and update IDs and labels
+            const firstPair = container.querySelector('.venue-staff-pair');
+            newPair.innerHTML = firstPair.innerHTML;
+            
+            // Update the IDs and names
+            updateFieldIds(newPair, newIndex);
+            
+            // Add a remove button
+            const removeCol = document.createElement('div');
+            removeCol.className = 'col-md-2';
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-danger remove-pair';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = function() {
+                container.removeChild(newPair);
+                // Renumber the remaining pairs
+                renumberPairs();
+            };
+            removeCol.appendChild(removeBtn);
+            newPair.appendChild(removeCol);
+            
+            // Add the new pair to the container
+            container.appendChild(newPair);
+        });
+        
+        // Event delegation for remove buttons
+        container.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-pair')) {
+                const pairToRemove = e.target.closest('.venue-staff-pair');
+                container.removeChild(pairToRemove);
+                renumberPairs();
+            }
+        });
+        
+        function updateFieldIds(element, index) {
+            // Update venue field
+            const venueLabel = element.querySelector('[for$="venue"]');
+            const venueSelect = element.querySelector('select[id$="venue"]');
+            
+            if (venueLabel) {
+                venueLabel.textContent = `Venue ${index}`;
+                venueLabel.setAttribute('for', `venue_staff_pairs-${index-1}-venue`);
+            }
+            
+            if (venueSelect) {
+                venueSelect.id = `venue_staff_pairs-${index-1}-venue`;
+                venueSelect.name = `venue_staff_pairs-${index-1}-venue`;
+            }
+            
+            // Update staff field
+            const staffLabel = element.querySelector('[for$="staff"]');
+            const staffSelect = element.querySelector('select[id$="staff"]');
+            
+            if (staffLabel) {
+                staffLabel.textContent = `Staff ${index}`;
+                staffLabel.setAttribute('for', `venue_staff_pairs-${index-1}-staff`);
+            }
+            
+            if (staffSelect) {
+                staffSelect.id = `venue_staff_pairs-${index-1}-staff`;
+                staffSelect.name = `venue_staff_pairs-${index-1}-staff`;
+            }
+        }
+        
+        function renumberPairs() {
+            const pairs = container.querySelectorAll('.venue-staff-pair');
+            pairs.forEach((pair, index) => {
+                updateFieldIds(pair, index + 1);
+            });
+        }
+    });
+    </script>
+    
+{% endblock scripts %}
+

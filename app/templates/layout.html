@@ -40,10 +40,10 @@
                             Schedule
                         </a>
                         <ul class="dropdown-menu bg-dark">
-                            <li><a class="dropdown-item " href="{{ url_for('main.create_schedule') }}">Schedule Staff</a></li>
+                            
                             <li><a class="dropdown-item" href="{{ url_for('main.staff_attendance') }}">Staff Attendance</a></li>
                             <li><a class="dropdown-item " href="{{ url_for('main.create_exam') }}">Create Exam</a></li>
-                            <li><a class="dropdown-item " href="{{ url_for('main.create_schedule') }}">Create Schedule</a></li>
+                            
                         </ul>
                     </li>
 
@@ -53,16 +53,12 @@
                                 Create
                             </a>
                             <ul class="dropdown-menu bg-dark">
-                                <li><a class="dropdown-item" href="{{ url_for('main.create_programmes') }}">Create Programmes</a></li>
-                                <li><a class="dropdown-item " href="{{ url_for('main.create_departments') }}">Create Departments</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
+
+                               
                                 <li><a class="dropdown-item" href="{{ url_for('main.create_title') }}">Create Title</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.create_users') }}">Create Users</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.create_days') }}">Create Days</a></li>
+
                                 <li><a class="dropdown-item" href="{{ url_for('main.create_academic_year') }}">Add Academic Year</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('main.create_session') }}">Create Session</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.create_sessions') }}">Create Sessions</a></li>
-                                <li><a class="dropdown-item " href="{{ url_for('main.create_venues') }}">Create Venues</a></li>
                             </ul>
                         </li>
                         {% endif %}

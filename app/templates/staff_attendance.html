@@ -1,65 +1,36 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
 {% block title %}
     {{title}}
 {% endblock title %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4 shadow-lg" style="width: 500px; max-height: 90vh; overflow-y: auto;">
-        <h4 class="text-center my-3">{{heading}}</h4>
-        <hr class="py-3">
-        <div>
-            <form method="POST" action="{{ url_for('main.staff_attendance') }}">
-                {{ form.hidden_tag() }}
-                
-                <div class="mb-3">
-                    {{ form.date.label(class="form-label") }}
-                    {{ form.date(class="form-control") }}
-                    <div class="form-text">Select a date to filter available sessions</div>
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+    <div style="max-width: 500px;" class="login-card col-lg-4 col-md-6 col-sm-10">
+            <div class=" login-form">
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">{{heading}}</h3>
+                    <hr class="my-4">
                 </div>
                 
-                <div class="mb-3">
-                    {{ form.session.label(class="form-label") }}
-                    <div class="position-relative">
-                        {{ form.session(class="form-select") }}
-                        <div id="session-loading" class="position-absolute top-50 end-0 translate-middle-y me-2 d-none">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
+               <div>
+                    {{render_form(form)}}
+               </div>
+               <hr class="my-4">
+                <div class="text-center mt-4">
+                    <p class="mb-0">Staff not found? <a href="{{url_for('main.register_user')}}" class=" btn btn-sm btn-outline-primary fw-bold">Add Staff</a></p>
                 </div>
                 
-                <div class="mb-3">
-                    {{ form.venues.label(class="form-label") }}
-                    {{ form.venues(class="form-select") }}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.staff_search.label(class="form-label") }}
-                    <div class="position-relative">
-                        {{ form.staff_search(class="form-control") }}
-                        {{ form.staff_id() }}
-                        <div id="staff-loading" class="position-absolute top-50 end-0 translate-middle-y me-2 d-none">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Searching...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-text">Type to search for staff members</div>
-                </div>
-                
-                <div class="d-grid gap-2 py-3">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-                <hr>
-                <div class="text-center">
-                    Staff not in list? <a class="btn btn-sm btn-outline-primary " href="{{url_for('main.register_user')}}">Add Staff</a>
-                </div>
-            </form>
-        </div>
+            </div>
+
     </div>
 </div>
+
+
+
 {% endblock content %}
 
 

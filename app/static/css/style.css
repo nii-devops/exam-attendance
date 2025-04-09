@@ -32,6 +32,19 @@ body {
     box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
 }
 
+.nav-link:hover {
+    color: #224abe;
+    transform: scale(1.1);
+}
+
+#home-nav-link:hover {
+    color:orangered;
+}
+
+.dropdown-item:hover {
+    color: #224abe;
+}
+
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: 700;
@@ -72,6 +85,10 @@ body {
     background: linear-gradient(120deg, #eaecf4 0%, #f8f9fc 100%);
     padding: 5rem 0;
     border-radius: 0.5rem;
+}
+
+.heading {
+    color: var(--primary-color);
 }
 
 .card {

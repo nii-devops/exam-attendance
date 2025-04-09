@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5 py-5">
+    <div style="max-width: 450px;" class="login-card col-lg-4 col-md-6 col-sm-10">
+            <div class=" login-form">
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">{{heading}}</h3>
+                    <hr class="my-4">
+                </div>
+                
+               <div>
+                    {{render_form(form)}}
+               </div>
+               
+            </div>
+
+    </div>
+</div>
+
+
+
+
+
+{% endblock content %}
+
+
+{% block scripts %}
+
+<script>
+    $(document).ready(function() {
+        // Listen for changes on the date field
+        $('#date').on('change', function() {
+            var selectedDate = $(this).val();
+            // Make sure a date is selected
+            if (selectedDate) {
+                $.ajax({
+                    url: '/get_sessions',
+                    type: 'GET',
+                    data: { date: selectedDate },
+                    dataType: 'json',
+                    success: function(data) {
+                        var $sessionField = $('#session');
+                        // Clear current options
+                        $sessionField.empty();
+    
+                        // Optionally, add a placeholder option
+                        $sessionField.append($('<option>', { 
+                            value: '',
+                            text: 'Select a session'
+                        }));
+    
+                        // Populate with new options
+                        $.each(data, function(index, session) {
+                            $sessionField.append($('<option>', {
+                                value: session.id,
+                                text: session.name
+                            }));
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error retrieving sessions:", error);
+                    }
+                });
+            }
+        });
+    });
+    </script>
+
+{% endblock scripts %}
+
+
