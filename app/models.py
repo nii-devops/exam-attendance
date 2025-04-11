@@ -119,7 +119,9 @@ class Exam(db.Model):
 
 class AcademicYear(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.String(20), nullable=False)
+    year = db.Column(db.String(20), unique=True, nullable=False)
+    start_year = db.Column(db.Integer, nullable=False)
+    end_year = db.Column(db.Integer, nullable=False)
 
 
 class Semester(db.Model):
@@ -212,8 +214,8 @@ class Biometric(db.Model):
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
     session = db.relationship('Session', backref='biometric_entries')
     
-    staff = db.relationship('User', secondary=biometric_staff, lazy='subquery',
-                            backref=db.backref('staff_biometric', lazy=True))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref='biometric_entries')
     
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
     venue = db.relationship('Venue', backref='biometrics')

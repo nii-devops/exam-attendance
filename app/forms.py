@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, SelectField, PasswordField, EmailField, SelectMultipleField, 
-                     DateField, TimeField, HiddenField, FieldList, FormField, FloatField)
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+                     DateField, TimeField, HiddenField, FieldList, FormField, FloatField,)
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Optional
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from app.models import *
 from app.data import titles
@@ -93,6 +93,13 @@ class TitleForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class AcademicYearForm(FlaskForm):
+    year = StringField('Academic Year', validators=[DataRequired()], render_kw={'placeholder': 'Format: 2020/2021 Academic Year'})
+    start_year = DateField('Start Year', validators=[DataRequired()], format='%Y')
+    end_year = DateField('End Year', validators=[DataRequired()], format='%Y')
+    submit = SubmitField('Submit')
+
+
 
 class DateForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
@@ -106,7 +113,7 @@ class DateSessionForm(FlaskForm):
     session = QuerySelectField(
         'Session',
         query_factory=session_query,
-        get_label='title',
+        get_label='name',
         allow_blank=False,
         validators=[DataRequired()],
         render_kw={'id': 'session'}
@@ -364,11 +371,16 @@ class VenueStaffForm(FlaskForm):
     )
 
 
-class BiometricScheduleForm(FlaskForm):
-    session = SelectField('Session', validators=[DataRequired()], choices=[])  
-    # Optionally, include a hidden field to track the number of dynamic pairs
-    pair_count = HiddenField('Pair Count')
 
+
+def session_query():
+    return Session.query.all()
+
+
+class BiometricScheduleForm(FlaskForm):
+    date = DateField('Date', validators=[DataRequired()])
+    session = SelectField('Select Session', validators=[DataRequired()], coerce=int)
+    submit = SubmitField('Save Schedule')
 
 
 
@@ -521,6 +533,8 @@ class AttendanceForm(FlaskForm):
             ).all()
         else:
             self.session.query_factory = lambda: Session.query.all()
+
+
 
 
 class SessionFilterForm(FlaskForm):

@@ -153,14 +153,15 @@ def report():
     return render_template('report.html', session=session, attendances=attendances)
 
 
+@bp.route('/report/', methods=['GET', 'POST'])
+def create_academic_year():
+    session_id = request.args.get('session_id')
+    session = Session.query.get_or_404(session_id)
+    attendances = Attendance.query.filter_by(session_id=session_id).all()
+    return render_template('report.html', session=session, attendances=attendances)
 
-@bp.route('/get-date-session', methods=['GET', 'POST'])
-def get_date_session():
-    form = DateSessionForm()
-    if form.validate_on_submit():
-        # Process form data here if needed
-        return redirect(url_for('main.staff_attendance'))
-    return render_template('narrow_form.html', title='Get Date Session', heading='Select Date and Session', form=form)
+
+
 
 
 @bp.route('/exam/create-exam', methods=['GET', 'POST'])
@@ -271,6 +272,7 @@ def create_courses():
                 title=title
             )
             db.session.add(new_course)
+
     db.session.commit() # Commit all new courses after the loop
     flash('CoHSS courses created successfully.', 'success') # Optional: Add a success message
     return redirect(url_for('main.home'))
@@ -375,6 +377,37 @@ def create_users():
   
 
 
+@bp.route('/users/view', methods=['GET', 'POST'])
+def get_users():
+    #prof_id = 
+    staff = User.query.order_by(
+        User.title_id == Title.query.filter_by(title='Rev. Prof.').first().id,
+        User.title_id == Title.query.filter_by(title='Prof.').first().id
+        ).all()
+    return render_template('all_staff.html', title='View Users', heading='Staff List', staff=staff)
+
+
+
+@bp.route('/user/edit/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    form=UserForm()
+    user = User.query.get(user_id)
+    form.title.data = user.title
+    form.surname.data = user.surname
+    form.first_name.data = user.first_name
+    form.department.data = user.department
+    form.category.data = user.category
+    if form.validate_on_submit():
+        user.title_id = form.title.data.id
+        user.surname = form.surname.data
+        user.first_name = form.first_name.data
+        user.department_id = form.department.data.id
+        user.category_id = form.category.data.id
+
+        db.session.commit()
+        return redirect(url_for('main.get_users'))
+    return render_template('add_user.html', title='Create User', heading='Create User', form=form)
+
 
 
 @bp.route('/session/create', methods=['GET', 'POST'])
@@ -448,6 +481,19 @@ def edit_session(session_id):
 
 
 
+@bp.route('/session/edit/<int:session_id>', methods=['GET', 'POST'])
+def delete_session(session_id):
+    if session_id:
+        try:
+            db.session.delete(session)
+            db.session.commit()
+            flash('Session deleted.', 'success')
+        except Exception as e:
+            flash(f"Error occurred: {e}", 'danger')
+            return redirect()
+    return redirect
+
+
 
 #@bp.route('/venues/create', methods=['GET', 'POST'])
 def create_venues():
@@ -458,60 +504,59 @@ def create_venues():
                 )
     db.session.commit()
     return 0
-   
+
+
+
+
+@bp.route('/get-date-session', methods=['GET', 'POST'])
+def get_date_session():
+    form = DateSessionForm()
+    if form.validate_on_submit():
+        date = form.date.data
+        session = form.session.data
+        # Process form data here if needed
+        return redirect(url_for('main.biometric_schedule', date=date, session_id=session.id))
+    return render_template('narrow_form.html', title='Get Date Session', heading='Select Date and Session', form=form)
+
+
+
+# --- Helper Endpoint to Get Venues for a Session ---
+@bp.route('/get-venues-for-session/<int:session_id>')
+def get_venues_for_session(session_id):
+    """
+    Returns JSON list of unique venues linked to exams within a specific session.
+    """
+    # Query unique Venues associated with Exams in the given Session
+    venues_query = db.session.query(Venue.id, Venue.name)\
+        .join(Exam.venues)\
+        .filter(Exam.session_id == session_id)\
+        .distinct()\
+        .order_by(Venue.name) # Order venues alphabetically
+
+    venues = venues_query.all()
+    venue_list = [{'id': v_id, 'name': v_name} for v_id, v_name in venues]
+
+    return jsonify(venues=venue_list)
 
 
 
 @bp.route('/biometric-schedule', methods=['GET', 'POST'])
 def biometric_schedule():
     form = BiometricScheduleForm()
-    
-    # Get venues for the JavaScript dropdown population
-    venues = Venue.query.all()
-    venue_list = [{'id': venue.id, 'name': venue.name} for venue in venues]
-    
     if form.validate_on_submit():
-        # Process form data
-        session_id = form.session.data.id
-        
-        # Delete existing assignments for this session (if updating)
-        # BiometricSchedule.query.filter_by(session_id=session_id).delete()
-        
-        # Save each venue-staff pair
-        for pair in form.venue_staff_pairs:
-            if pair.form.venue.data and pair.form.staff.data:
-                schedule = Biometric(
-                    session_id=session_id,
-                    venue_id=pair.form.venue.data.id,
-                    staff_id=pair.form.staff.data.id
-                )
-                db.session.add(schedule)
-        
+        session_id = form.session.data
+        staff_keys = [key for key in request.form if key.startswith('staff_')]
+        for key in staff_keys:
+            index = key.split('_')[1]
+            staff_id = request.form.get(key)
+            venue_id = request.form.get(f'venue_{index}')
+            if staff_id and venue_id:
+                biometric = Biometric(session_id=session_id, user_id=staff_id, venue_id=venue_id)
+                db.session.add(biometric)
         db.session.commit()
-        flash('Biometric schedule saved successfully!', 'success')
-        return redirect(url_for('main.home'))
-    
-    return render_template('schedule_form.html', title='Create Schedule', heading='Create Schedule', form=form)
-
-
-
-
-@bp.route('/year/create', methods=['GET', 'POST'])
-def create_academic_year():
-    form =  AcademicYearForm()
-    if form.validate_on_submit():
-        year = form.year.data
-        if not AcademicYear.query.filter_by(year=year).first():
-            year=year.upper()
-            db.session.add(
-                AcademicYear(year=year)
-            )
-            db.session.commit()
-            flash('Academic year created.', 'success')
-            return redirect(url_for('main.home'))
-    return render_template('narrow_form.html', title='Academic year', heading='Create Academic Year', form=form)
-
-
+        flash('Biometric schedule saved successfully.')
+        return redirect(url_for('biometric.biometric_schedule'))
+    return render_template('schedule_form.html', title='Biometric Schedule', heading='Create Biometric Schedule', form=form)
 
 
 
@@ -562,8 +607,6 @@ def staff_attendance():
 
 
 
-
-
 # ###########################
 ###### AJAX STUFF
 
@@ -596,6 +639,42 @@ def search_staff():
     return jsonify([])
 
 
+
+@bp.route('/get_sessions', methods=['GET'])
+def get_sessions():
+    date_str = request.args.get('date')
+    if date_str:
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            sessions = Session.query.filter_by(date=date).all()
+            return jsonify([{'id': s.id, 'name': s.name} for s in sessions])
+        except Exception as e:
+            flash(f"An error occurred: {e}", 'danger')
+            return redirect(url_for('main.home'))
+    
+
+
+@bp.route('/get_venues', methods=['GET'])
+def get_venues():
+    session_id = request.args.get('session_id')
+    venues = db.session.query(Venue).join(exam_venue).join(Exam).filter(Exam.session_id == session_id).distinct().all()
+    return jsonify([{'id': v.id, 'name': v.name} for v in venues])
+
+
+
+@bp.route('/get_staff', methods=['GET'])
+def get_staff():
+    staff = User.query.filter_by(role='Biometric Staff - IT').all()
+    return jsonify([{'id': u.id, 'name': f"{u.first_name} {u.surname}"} for u in staff])
+
+
+@bp.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy_policy.html', title='Privacy Policy', heading='Privacy Policy')
+
+
+
+"""
 # Route to get sessions for a specific date
 @bp.route('/get_sessions')
 def get_sessions():
@@ -620,6 +699,9 @@ def get_sessions():
             # Invalid date format
             return jsonify({'error': 'Invalid date format'}), 400
     return jsonify([])
+
+"""
+
 
 
 

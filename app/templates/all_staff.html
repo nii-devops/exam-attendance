@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+    <div style="max-width: 1200px;" class="login-card col-lg-4 col-md-6 col-sm-10">
+            <div class=" login-form">
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">{{heading}}</h3>
+                    <hr class="my-4">
+                </div>
+                
+               <div>
+                <table class="table table-striped table-bordered">
+                    <thead class="table-primary">
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Designation</th>
+                        <th scope="col">Modify</th>
+                      </tr>
+                    </thead>
+                    
+                    <tbody>
+                        {% for st in staff %}
+                        <tr>
+                            <th scope="row">{{loop.index}}</th>
+                            <td>{{ st.title.title }}</td>
+                            <td>{{ st.first_name }} {{ st.surname }}</td>
+                            <td>{{ st.department.name }}</td>
+                            <td>{{ st.category.name }}</td>
+                            <td>
+                                <div class="d-flex">
+                                    <a class="btn btn-sm btn-outline-warning me-2" href="{{ url_for('main.edit_user', user_id=st.id) }}">Edit</a>
+                                    <a class="btn btn-sm btn-outline-danger" href="http://">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                       {% endfor %} 
+                    </tbody>
+                  </table>
+               </div>
+               
+            </div>
+
+    </div>
+</div>
+
+
+
+
+
+{% endblock content %}
+
+
+
