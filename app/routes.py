@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, render_template, redirect, url_for, flash, request, session, jsonify, abort, make_response, current_app
+from flask import Blueprint, Flask, render_template, redirect, url_for, flash, request, session, jsonify, abort, make_response, current_app, send_file
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta
@@ -10,6 +10,8 @@ from flask_bootstrap import Bootstrap5
 from sqlalchemy import func, or_, case, desc
 from sqlalchemy.exc import IntegrityError
 import pdfkit
+from io import BytesIO
+import pandas as pd
 
 
 import os
@@ -1194,6 +1196,120 @@ def staff_attendance():
         heading='Attendance',
         form=form
     )
+
+
+
+@bp.route('/attendance/broadsheet')
+def attendance_broadsheet():
+    # 1) Parse the date filter as before
+    date_str = request.args.get('date')
+    selected_date = None
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = None
+
+    # 2) Get all sessions for that date (distinct)
+    sessions_q = Session.query
+    if selected_date:
+        sessions_q = sessions_q.filter(Session.date == selected_date)
+    sessions = sessions_q.order_by(Session.start_time).all()
+
+    # 3) Fetch all attendance records for that same date
+    attend_q = Attendance.query.join(Session)
+    if selected_date:
+        attend_q = attend_q.filter(Session.date == selected_date)
+    attendance = attend_q.all()
+
+    # 4) Fetch staff
+    staff = User.query.outerjoin(Attendance).order_by(User.surname).all()
+
+    return render_template(
+        'broadsheet.html',
+        title='Attendance Broadsheet',
+        heading='Attendance Broadsheet',
+        sessions=sessions,        # <-- pass this in
+        attendance=attendance,
+        staff=staff
+    )
+
+
+
+@bp.route('/attendance/broadsheet/download-excel')
+def download_broadsheet_excel():
+    # 1) Parse date filter
+    date_str = request.args.get('date')
+    selected_date = None
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = None
+
+    # 2) Fetch all sessions for that date (so we get *all* columns)
+    session_query = Session.query
+    if selected_date:
+        session_query = session_query.filter(Session.date == selected_date)
+    session_query = session_query.order_by(Session.start_time)
+    sessions = session_query.all()
+
+    # Build our session columns list: [(id, label), ...]
+    session_cols = [
+        (s.id, f"{s.date} | {s.session_number.name}")
+        for s in sessions
+    ]
+
+    # 3) Fetch all attendance for that date
+    att_q = Attendance.query.join(Session)
+    if selected_date:
+        att_q = att_q.filter(Session.date == selected_date)
+    attendance = att_q.all()
+
+    # 4) Build header row
+    headers = ['#', 'Staff', 'Department', 'Category'] + [label for (_, label) in session_cols]
+
+    # 5) Fetch staff in your desired order
+    staff = User.query.outerjoin(Attendance).order_by(User.surname).all()
+
+    # 6) Build the table rows
+    rows = []
+    for idx, user in enumerate(staff, start=1):
+        row = [
+            idx,
+            f"{user.first_name} {user.surname}",
+            user.department.name if user.department else '',
+            user.category.name if user.category else ''
+        ]
+        # one column per session
+        for sid, _ in session_cols:
+            # check if there's an attendance record for this user & session
+            present = any(
+                att.session_id == sid and att.user_id == user.id
+                for att in attendance
+            )
+            row.append('Present' if present else 'Absent')
+        rows.append(row)
+
+    # 7) Write to Excel
+    df = pd.DataFrame(rows, columns=headers)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Attendance')
+    output.seek(0)
+
+    # 8) Send as attachment
+    filename = f"attendance_broadsheet_{date_str or 'all'}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@bp.route('/attendance/summary')
+def attendance_summary():
+    return
 
 
 

@@ -1640,7 +1640,13 @@ body {
     background-color: #f1f3f5;
 }
 
+.present {
+    background-color: #1cc88a;
+}
 
+.absent {
+    background-color: rgb(236, 82, 82);
+}
 
 
 
