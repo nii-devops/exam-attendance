@@ -1,0 +1,107 @@
+
+
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="{{url_for('main.home')}}">
+            <i class="fas fa-clipboard-check me-2"></i>Tally
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a id="home-nav-link" class="nav-link active" href="{{url_for('main.home')}}">Home</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="aboutDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('main.get_date_session') }}">View Session</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.get_users') }}">View Staff</a></li>
+                        <hr>
+                        <li><a class="dropdown-item " href="{{ url_for('main.exam_date_view') }}">View Daily Exams</a></li>
+                        <li><a class="dropdown-item " href="#">View Exams</a></li>
+                       <hr>
+                        <li><a class="dropdown-item " href="{{ url_for('main.get_date_session') }}">Schedule Staff</a></li>
+                        <!--li><a class="dropdown-item" href="#">FAQ</a></li-->
+                    </ul>
+                </li>
+                
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('main.staff_attendance')}}">
+                        <i class="fas fa-clipboard-check me-1"></i>Attendance
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Schedule
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="aboutDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_session') }}">Create Session</a></li>
+                        <hr>
+                        <li><a class="dropdown-item " href="{{ url_for('main.create_exam') }}">Schedule Exam</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.get_exam_to_edit') }}">Edit Exam</a></li>
+                        <hr>
+                        <li><a class="dropdown-item " href="{{ url_for('main.biometric_schedule') }}">Schedule Staff</a></li>
+                        <!--li><a class="dropdown-item" href="#">FAQ</a></li-->
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-plus me-1"></i>Add
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="aboutDropdown">
+                        
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_academic_year') }}">Create Academic Year</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_course') }}">Create Course</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_programme') }}">Create Programme</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_session_numbers') }}">Create Session Numbers</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-shield me-1"></i>Admin
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="aboutDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('main.admin') }}">Admin Panel</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.admin_panel') }}">Admin</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_prerequisites') }}">Create Prerequisites</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.clear_count') }}">Clear Session Counts</a></li>
+                    </ul>
+                </li>
+
+                
+                <li class="nav-item ms-5">
+                    <a class="nav-link" href="{{url_for('main.logout')}}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item ms-5">
+                    <a class="nav-link" href="{{url_for('main.login')}}">Login</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<!-- Flash Message -->
+<div id="flash-section" class="container-fluid px-4 text-center" style="width: 500px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>

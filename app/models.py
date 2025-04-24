@@ -43,6 +43,12 @@ attendance_staff = db.Table('attendance_staff',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
 
+programme_level = db.Table('programme_level',
+    db.Column('programme_id', db.Integer, db.ForeignKey('programme.id'), primary_key=True),
+    db.Column('level_id', db.Integer, db.ForeignKey('level.id'), primary_key=True)
+)
+
+
 
 
 
@@ -70,6 +76,8 @@ class User(db.Model, UserMixin):
     department = db.relationship('Department', back_populates='users')
     
     role = db.Column(db.String(30), nullable=True)
+
+    is_manager = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
 
     session_count = db.Column(db.Integer, default=0)
@@ -81,17 +89,25 @@ class User(db.Model, UserMixin):
         return self.id == 1 or self.is_admin
 
 
+class SessionNumber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, nullable=False, unique=True)
+    name = db.Column(db.String(20), nullable=False, unique=True)
+
+
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
+
+    session_number_id = db.Column(db.Integer, db.ForeignKey('session_number.id'), nullable=False)
     academic_year_id = db.Column(db.Integer, db.ForeignKey('academic_year.id'), nullable=False)
     semester_id = db.Column(db.Integer, db.ForeignKey('semester.id'), nullable=False)
     exam_type_id = db.Column(db.Integer, db.ForeignKey('exam_type.id'), nullable=False)
 
     # Relationships
+    session_number = db.relationship('SessionNumber', backref='sessions')
     academic_year = db.relationship('AcademicYear', backref='sessions')
     semester = db.relationship('Semester', backref='sessions')
     exam_type = db.relationship('ExamType', backref='sessions')
@@ -99,7 +115,9 @@ class Session(db.Model):
 
 class Exam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
+    
+    level_id = db.Column(db.Integer, db.ForeignKey('level.id'))
+    level = db.relationship('Level', backref='exams')
     
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
     session = db.relationship('Session', backref='exams')
@@ -142,15 +160,71 @@ class Venue(db.Model):
     sessions = db.relationship('Session', secondary='session_venue')
 
 
+class GraduateType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False, unique=True)
+    initials = db.Column(db.String(10), nullable=True)
+
+
+class Level(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, nullable=False)
+    year_group = db.Column(db.String(20), nullable=False)
+    level = db.Column(db.String(20), nullable=False)
+       
+
+class College(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    initials = db.Column(db.String(20), nullable=True)
+
+
+class Faculty(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    initials = db.Column(db.String(20), nullable=True)
+
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    # Relationships
+    college = db.relationship('College', backref='faculties')
+
+
 class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    users = db.relationship('User', back_populates='department')
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    initials = db.Column(db.String(20), nullable=True)
+    
+    faculty_id = db.Column(db.Integer, db.ForeignKey('faculty.id'), nullable=True)
+    # Faculty Relationship
+    faculty = db.relationship('Faculty', backref='departments')
+    # User Relationship
+    users = db.relationship('User', back_populates='department', lazy='dynamic') # lazy='dynamic' # optional, makes .users a query you can further filter
+
+
+class Programme(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    initials = db.Column(db.String(20), nullable=True)
+
+    department_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
+    # Relationships
+    department = db.relationship('Department', backref='programmes')
+
+
+class Course(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course_code = db.Column(db.String(50), unique=True)
+    title = db.Column(db.String(150))
+
+    programme_id = db.Column(db.Integer, db.ForeignKey('programme.id'), nullable=True)
+    # Relationships
+    programme = db.relationship('Programme', backref='courses')
+
 
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False, unique=True)
     users = db.relationship('User', back_populates='category')
     allowance = db.relationship('Allowance', back_populates='category', uselist=False)
 
@@ -163,13 +237,13 @@ class Category(db.Model):
         return f'<Category {self.name}>'
 
 
+
 class Allowance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rate = db.Column(db.Float, nullable=False)  # Rate per session
 
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     category = db.relationship('Category', back_populates='allowance')
-
 
 
 
@@ -185,19 +259,6 @@ class Attendance(db.Model):
     venue = db.relationship('Venue', backref='attendances')
     
     timestamp = db.Column(db.DateTime, nullable=False)
-
-
-class Course(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    course_code = db.Column(db.String(50), unique=True)
-    title = db.Column(db.String(150))
-
-
-class Programme(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    year_group = db.Column(db.Integer)
-    number = db.Column(db.Integer, nullable=True)
 
 
 class Schedule(db.Model):

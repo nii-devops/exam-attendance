@@ -54,7 +54,7 @@
 
             
             <div class="text-center mt-4">
-                <p class="mb-0">Staff not found? <a href="{{url_for('main.register_user')}}" class="btn btn-sm btn-outline-primary fw-bold">Add Staff</a></p>
+                <p class="mb-0">Staff not found? <a href="{{url_for('main.create_user')}}" class="btn btn-sm btn-outline-primary fw-bold">Add Staff</a></p>
             </div>
         </div>
     </div>
@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
     }
+    
 
     document.querySelector('#date').addEventListener('change', function() {
         let date = this.value;

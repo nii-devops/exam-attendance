@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Optional: Select2 Bootstrap 5 Theme (makes Select2 look more like Bootstrap) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <!-- Custom Styles -->
+    <style>
+        /* Ensure Select2 takes full width */
+        .select2-container {
+            width: 100% !important;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+
+        /* Adjust Select2 height to match Bootstrap inputs (optional, depends on theme) */
+        .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px) !important; /* Matches Bootstrap's default input height */
+        }
+        .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + .75rem) !important; /* Vertically center text */
+            padding-left: .75rem !important; /* Match Bootstrap padding */
+            padding-right: .75rem !important;
+        }
+        .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem) !important; /* Match height */
+        }
+        .select2-selection--multiple {
+            min-height: calc(1.5em + .75rem + 2px) !important; /* Minimum height */
+             padding-left: .75rem !important; /* Match Bootstrap padding */
+             padding-right: .75rem !important;
+        }
+
+        /* Minor adjustments for better alignment with Bootstrap form-control */
+         .select2-search--dropdown .select2-search__field {
+            padding: .375rem .75rem;
+        }
+
+        /* Adjust vertical alignment if needed */
+        .form-label {
+             margin-bottom: 0.5rem;
+        }
+
+        /* Ensure container has some padding if needed when not using base template */
+        body {
+            background-color: #f8f9fa; /* Optional: mimic a light background */
+        }
+
+    </style>
+    {% from 'bootstrap5/form.html' import render_form %}
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+        <div style="max-width: 600px;" class="login-card col-lg-6 col-md-8 col-sm-10 p-4 border rounded shadow-lg bg-white">
+            <div class="login-form">
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">{{ heading }}</h3>
+                    <hr class="my-4">
+                </div>
+
+                <div>
+                    <!-- Flask-Bootstrap form rendering - This still needs the Flask context -->
+                    {{ render_form(form) }}
+                    <!-- Note: If you needed *pure* static HTML without Flask rendering,
+                         you would manually write out each <label>, <select>, <input> here. -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery (required by Select2 and Bootstrap JS) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- Bootstrap 5 JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Include jQuery UI for autocomplete if staff search is still needed -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fWUZWJQocluADgQAjsCeIQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+
+
+    <!-- Custom Scripts -->
+    <script>
+    $(document).ready(function() {
+        // --- Initialize Select2 for searchable fields ---
+        $('#course_field').select2({
+            theme: "bootstrap-5", // Apply Bootstrap 5 theme
+            placeholder: "Select a course",
+             allowClear: true // Optional: adds a clear button
+        });
+        $('#programmes_field').select2({
+             theme: "bootstrap-5",
+             placeholder: "Select programmes",
+             allowClear: true // Optional: adds a clear button
+        });
+        $('#venues_field').select2({
+             theme: "bootstrap-5",
+             placeholder: "Select venues",
+             allowClear: true // Optional: adds a clear button
+        });
+        // --- End of Select2 Initialization ---
+
+
+        // Function to update sessions based on selected date
+        function updateSessions(date) {
+            // Show loading indicator (if you have one) or simply disable
+            $('#session_field').prop('disabled', true);
+
+            $.ajax({
+                url: '/get_sessions', // Make sure this endpoint exists in your Flask app
+                data: { date: date },
+                type: 'GET',
+                success: function(response) {
+                    var sessionSelect = $('#session_field');
+                    sessionSelect.empty(); // Clear existing options
+
+                    if (response.length > 0) {
+                        $.each(response, function(index, session) {
+                            sessionSelect.append(
+                                $('<option></option>')
+                                    .val(session.id)
+                                    .text(session.date + (session.start_time ? ' - ' + session.start_time : ''))
+                            );
+                        });
+                    } else {
+                        sessionSelect.append(
+                            $('<option></option>')
+                                .val('')
+                                .text('No sessions available') // More user-friendly message
+                        );
+                    }
+                    sessionSelect.prop('disabled', false); // Re-enable
+                },
+                error: function(error) {
+                    console.error('Error loading sessions:', error);
+                    $('#session_field').empty().append(
+                        $('<option></option>')
+                            .val('')
+                            .text('Error loading sessions')
+                    ).prop('disabled', false); // Re-enable even on error
+                }
+            });
+        }
+
+        // Date field change event handler
+        $('#date_field').change(function() {
+            var selectedDate = $(this).val();
+            if (selectedDate) {
+                // Update the URL for bookmarking/sharing (optional)
+                var url = new URL(window.location.href);
+                url.searchParams.set('date', selectedDate);
+                 // Using replaceState instead of pushState to avoid multiple history entries on date change
+                history.replaceState({}, '', url);
+
+                // Update sessions dropdown
+                updateSessions(selectedDate);
+            } else {
+                 // Handle case where date is cleared (optional)
+                 $('#session_field').empty().append($('<option></option>').val('').text('Select date first')).prop('disabled', true);
+            }
+        });
+
+        // Check for date parameter in URL on page load and update sessions if present
+        var urlParams = new URLSearchParams(window.location.search);
+        var dateParam = urlParams.get('date');
+
+        if (dateParam) {
+             // Check if the date field isn't already set by the backend form rendering
+             if (!$('#date_field').val()) {
+                 $('#date_field').val(dateParam);
+             }
+            // Trigger the session update based on the URL parameter *if* the backend didn't prepopulate sessions
+            // If the backend *does* handle the initial date correctly (likely), this explicit call might be redundant.
+            // However, it ensures sessions load if the backend didn't account for the URL param during initial form render.
+            // We check if the session field has options other than a potential placeholder.
+             if ($('#session_field option').length <= 1 && $('#session_field option:first').val() === '') {
+                updateSessions(dateParam);
+             }
+        } else {
+             // If no date param, ensure session field is appropriately disabled/prompted
+             if (!$('#date_field').val()) {
+                 $('#session_field').prop('disabled', true);
+                 // Optionally add a placeholder if empty
+                 if ($('#session_field option').length === 0) {
+                    $('#session_field').append($('<option></option>').val('').text('Select date first'));
+                 }
+             }
+        }
+
+        // ----- Staff Autocomplete (Keep if needed, remove if not) -----
+        // Initialize staff search autocomplete only if the element exists
+        if ($('#staff_search_field').length) {
+            $('#staff_search_field').autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: '/search_staff', // Make sure this endpoint exists
+                        data: { q: request.term },
+                        type: 'GET',
+                        success: function(data) {
+                            // Format data for autocomplete
+                            var formattedData = $.map(data, function(item) {
+                                return {
+                                    label: item.name,    // Display in dropdown
+                                    value: item.name,    // Value to show in input field
+                                    id: item.id          // ID to store in hidden field
+                                };
+                            });
+                            response(formattedData);
+                        },
+                        error: function(error) {
+                            console.error('Error searching staff:', error);
+                            response([]);
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function(event, ui) {
+                    // Set the hidden field with the staff ID
+                    $('#staff_id_field').val(ui.item.id); // Ensure #staff_id_field exists in your form
+                    $('#staff_search_field').removeClass('is-invalid').addClass('is-valid');
+                    // Remove potential validation message
+                    $('#staff_feedback').remove();
+                    return false; // Prevent value from replacing label in the input field after selection
+                },
+                 focus: function(event, ui) {
+                    // Prevent item value from overriding input field on focus/arrow key navigation
+                    return false;
+                },
+                change: function(event, ui) {
+                    var searchField = $('#staff_search_field');
+                    var idField = $('#staff_id_field'); // Ensure #staff_id_field exists
+
+                    // Clear validation unless an item is selected
+                    searchField.removeClass('is-invalid is-valid');
+                     $('#staff_feedback').remove();
+
+                    if (!ui.item && searchField.val().trim() !== '') {
+                        // Text entered but no item selected from dropdown
+                        idField.val(''); // Clear the hidden ID
+                        searchField.addClass('is-invalid');
+
+                        // Add validation feedback
+                        searchField.after(
+                            '<div id="staff_feedback" class="invalid-feedback">' +
+                            'Please select a valid staff member from the dropdown.' +
+                            '</div>'
+                        );
+                    } else if (!ui.item) {
+                        // Field was cleared or selection was undone
+                        idField.val('');
+                    }
+                }
+            });
+        }
+
+        // Form submission validation (including staff field if present)
+        $('form').on('submit', function(e) {
+             var staffSearchField = $('#staff_search_field');
+             var staffIdField = $('#staff_id_field');
+
+             // Validate staff selection ONLY if the fields exist and text has been entered
+            if (staffSearchField.length && staffIdField.length && staffSearchField.val().trim() !== '' && staffIdField.val() === '') {
+                e.preventDefault(); // Stop submission
+                staffSearchField.addClass('is-invalid');
+
+                // Show validation message if not already present
+                if (!$('#staff_feedback').length) {
+                    staffSearchField.after(
+                        '<div id="staff_feedback" class="invalid-feedback">' +
+                        'Please select a valid staff member from the dropdown.' +
+                        '</div>'
+                    );
+                }
+                 $('html, body').animate({ // Scroll to the invalid field
+                    scrollTop: staffSearchField.offset().top - 100 // Adjust offset as needed
+                }, 500);
+                return false; // Double ensure submission stops
+            }
+
+            // Add any other custom client-side validation here if needed
+
+            return true; // Allow submission if all checks pass
+        });
+        // ----- End of Staff Autocomplete -----
+
+
+    });
+    </script>
+
+</body>
+</html>

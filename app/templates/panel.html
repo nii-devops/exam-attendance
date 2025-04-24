@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block style %}
+    
+<style>
+    .sidebar {
+        height: 100vh;
+        background: #2c3e50;
+        background: linear-gradient(180deg, #2c3e50, #3498db);
+        position: fixed;
+        left: 0;
+        width: 250px;
+        transition: all 0.3s;
+    }
+
+    .sidebar-header {
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-menu li a {
+        color: white;
+        padding: 15px 20px;
+        display: block;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .sidebar-menu li a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-menu li.active a {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .main-content {
+        margin-left: 250px;
+        transition: all 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            margin-left: -250px;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .sidebar.active {
+            margin-left: 0;
+        }
+    }
+
+    .card-stat {
+        transition: transform 0.3s;
+    }
+
+    .card-stat:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+{% endblock style %}
+
+
+
+{% block content %}
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-user-clock"></i> Attendance Pro</h3>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="active"><a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-database"></i> Database</a></li>
+        <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> Staff</a></li>
+        <li><a href="#"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Top Nav (no changes here) -->
+
+    <!-- Page Content -->
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" id="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </nav>
+
+        <!-- Tab Contents -->
+        <div id="dashboard" class="tab-content active">
+            <!-- Existing dashboard content -->
+        </div>
+
+        <div id="database" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-database"></i> Employee Database</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>001</td>
+                                    <td>John Doe</td>
+                                    <td>Manager</td>
+                                    <td>HR</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                                <!-- Add more rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar"></i> Attendance Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Monthly Attendance</h6>
+                            <canvas id="attendanceChart" style="height: 300px;"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Department Statistics</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    HR Department
+                                    <span class="badge bg-primary rounded-pill">95%</span>
+                                </li>
+                                <!-- Add more departments -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-cog"></i> System Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Working Hours</label>
+                            <input type="time" class="form-control" value="09:00">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Attendance Policy</label>
+                            <textarea class="form-control" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add similar divs for other menu items -->
+    </div>
+</div>
+
+{% endblock content %}
+
+
+
+{% block scripts %}
+
+<script>
+    // Toggle sidebar on mobile
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('active');
+        document.querySelector('.main-content').classList.toggle('active');
+    });
+
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all menu items and tab contents
+                document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked menu item
+                this.parentElement.classList.add('active');
+                
+                // Get target content ID from href
+                const target = this.getAttribute('href').substring(1);
+                document.getElementById(target).classList.add('active');
+                
+                // Update breadcrumb
+                const breadcrumb = document.querySelector('#breadcrumb .breadcrumb');
+                breadcrumb.innerHTML = `<li class="breadcrumb-item">Dashboard</li>
+                                      <li class="breadcrumb-item active">${this.textContent.trim()}</li>`;
+                
+                // Close sidebar on mobile
+                if (window.innerWidth < 768) {
+                    document.querySelector('.sidebar').classList.remove('active');
+                    document.querySelector('.main-content').classList.remove('active');
+                }
+            });
+        });
+
+    // Initialize dashboard as active
+    document.getElementById('dashboard').classList.add('active');
+
+</script>
+
+{% endblock scripts %}

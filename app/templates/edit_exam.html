@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+    <div style="max-width: 600px;" class="login-card col-lg-6 col-md-8 col-sm-10 p-4 border rounded shadow-lg bg-white">
+        <div class="login-form">
+            <div class="text-center mb-4">
+                <h3 class="heading fw-bold">{{ heading }}</h3>
+                <hr class="my-4">
+            </div>
+
+            <div>
+                <!-- Flask-Bootstrap form rendering - This still needs the Flask context -->
+                {{ render_form(form) }}
+                <!-- Note: If you needed *pure* static HTML without Flask rendering,
+                     you would manually write out each <label>, <select>, <input> here. -->
+            </div>
+        </div>
+    </div>
+</div>
+    {% endblock content %}
+
+
+    {% block scripts %}
+    <script>
+        $(document).ready(function () {
+            $('#date_field').on('change', function () {
+                let selectedDate = $(this).val();
+                if (!selectedDate) return;
+
+                $.ajax({
+                    url: '/get_sessions',
+                    method: 'GET',
+                    data: { date: selectedDate },
+                    success: function (data) {
+                        let sessionSelect = $('#session_field');
+                        sessionSelect.empty();
+
+                        data.forEach(function (session) {
+                            let label = `${session.date} - ${session.start_time}`;
+                            sessionSelect.append(new Option(label, session.id));
+                        });
+
+                        sessionSelect.trigger('change');
+                    }
+                });
+            });
+
+            $('#session_field').on('change', function () {
+                let sessionId = $(this).val();
+                if (!sessionId) return;
+
+                $.ajax({
+                    url: '/get_exams',
+                    method: 'GET',
+                    data: { session_id: sessionId },
+                    success: function (data) {
+                        let examSelect = $('#exam_field');
+                        examSelect.empty();
+
+                        data.forEach(function (exam) {
+                            examSelect.append(new Option(exam.label, exam.id));
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
+{% endblock scripts %}
