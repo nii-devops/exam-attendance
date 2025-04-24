@@ -23,10 +23,10 @@
                         <li><a class="dropdown-item" href="{{ url_for('main.get_date_session') }}">View Session</a></li>
                         <li><a class="dropdown-item " href="{{ url_for('main.get_users') }}">View Staff</a></li>
                         <hr>
-                        <li><a class="dropdown-item " href="{{ url_for('main.exam_date_view') }}">View Daily Exams</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.exam_date_view') }}">Daily Exams</a></li>
                         <li><a class="dropdown-item " href="#">View Exams</a></li>
                        <hr>
-                        <li><a class="dropdown-item " href="{{ url_for('main.get_date_session') }}">Schedule Staff</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.get_schedule_sessions') }}">Staff Schedule</a></li>
                         <!--li><a class="dropdown-item" href="#">FAQ</a></li-->
                     </ul>
                 </li>
@@ -81,6 +81,7 @@
                 <li class="nav-item ms-5">
                     <a class="nav-link" href="{{url_for('main.logout')}}">Logout</a>
                 </li>
+
                 {% else %}
                 <li class="nav-item ms-5">
                     <a class="nav-link" href="{{url_for('main.login')}}">Login</a>
@@ -105,3 +106,5 @@
         {% endif %}
     {% endwith %}
 </div>
+
+

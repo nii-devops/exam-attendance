@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, render_template, redirect, url_for, flash, request, session, jsonify, abort
+from flask import Blueprint, Flask, render_template, redirect, url_for, flash, request, session, jsonify, abort, make_response, current_app
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta
@@ -9,6 +9,8 @@ from app import db
 from flask_bootstrap import Bootstrap5
 from sqlalchemy import func, or_, case, desc
 from sqlalchemy.exc import IntegrityError
+import pdfkit
+
 
 import os
 import pandas as pd
@@ -1083,12 +1085,11 @@ def get_venues_for_session(session_id):
 # #################################
 ###### ATTENDANCE & SCHEDULE ######
 
-
 @bp.route('/biometric-schedule', methods=['GET', 'POST'])
 def biometric_schedule():
     form = BiometricScheduleForm()
     if form.validate_on_submit():
-        session_id = form.session.data
+        session_id = form.session.data.id
         staff_keys = [key for key in request.form if key.startswith('staff_')]
         for key in staff_keys:
             index = key.split('_')[1]
@@ -1101,6 +1102,25 @@ def biometric_schedule():
         flash('Biometric schedule saved successfully.')
         return redirect(url_for('main.biometric_schedule'))
     return render_template('schedule_staff.html', title='Biometric Schedule', heading='Create Biometric Schedule', form=form)
+
+
+@bp.route('/schedule/get-session', methods=['GET', 'POST'])
+def get_schedule_sessions():
+    form = DateSessionForm()
+    if form.validate_on_submit():
+        session_id = form.session.data.id
+        return redirect(url_for('main.view_schedule', session_id=session_id))
+    return render_template('narrow_form.html', title='Get Session', heading='Get Session', form=form)
+
+
+@bp.route('/schedule/view/<int:session_id>', methods=['GET', 'POST'])
+def view_schedule(session_id):
+    session = Session.query.get_or_404(session_id)
+    if not session:
+        flash('Session not found.', 'info')
+        return redirect(url_for('main.get_schedule_sessions'))
+    schedule = Biometric.query.filter_by(session_id=session.id).all()
+    return render_template('view_schedule.html', schedule=schedule, date=session.date, session=session, heading=f"Schedule for {session.date} - {session.session_number.name}")
 
 
 @bp.route('/staff/take-attendance', methods=['GET', 'POST'])
@@ -1216,6 +1236,42 @@ def create_programme():
 
 
 
+# ##################################
+###### DOWNLOAD PAGE CONTENT ######
+
+@bp.route('/download-schedule.pdf/<int:session_id>')
+def download_schedule_pdf(session_id):
+    date_str = request.args.get('date')
+    sess = Session.query.get_or_404(session_id)
+    schedule_query = Biometric.query.join(Session)
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            schedule_query = schedule_query.filter(Session.date == selected_date)
+        except ValueError:
+            pass
+    schedule = schedule_query.all()
+
+    # Render the table-only template
+    html = render_template(
+        'schedule_pdf.html',
+        schedule=schedule,
+        heading=f"Schedule for {date_str or 'All Dates'} || {sess.session_number.name}"
+    )
+    # === Windows-specific wkhtmltopdf config ===
+    wkhtmltopdf_path = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+    # Generate PDF
+    pdf = pdfkit.from_string(html, False, configuration=config)
+    # Send as download
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    filename = f"schedule_{date_str or 'all'}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+    return response
+
+
+
 # ########################
 ###### STATIC PAGES ######
 
@@ -1276,7 +1332,7 @@ def get_sessions():
     for s in sessions:
         sessions_data.append({
             'id': s.id,
-            'date': s.date,
+            'date': s.date.strftime('%Y-%m-%d'),
             'start_time': s.start_time.strftime('%H:%M') if s.start_time else ''
         })
     return jsonify(sessions_data), 200

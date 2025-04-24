@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+<div class="container my-5 py-5">
+  <h3 class="mb-4 text-center">{{ heading }}</h3>
+  <hr class="py-3">
+    
+  {% if session %}
+    <div>
+        <div class="text-center mb-3">
+            <a href="{{ url_for('main.download_schedule_pdf', date=session.date, session_id=session.id) }}"
+              class="btn btn-primary">
+            <i class="bi bi-file-earmark-pdf"></i>
+              Download PDF
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+
+    <div class="col-md-8 col-sm-12 d-flex align-items-stretch">
+        
+      </div>
+      <table class="table table-striped shadow-lg ">
+        <thead class="bg-primary">
+          <tr>
+            <th>#</th>
+            <th>STAFF</th>
+            <th>DEPARTMENT</th>
+            <th>VENUE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sch in schedule %}
+          <tr>
+            <th>{{ loop.index }}</th>
+            <td>{{ sch.user.first_name }} {{ sch.user.surname }}</td>
+            <td>{{ sch.user.department.name }}</td>
+            <td>{{ sch.venue.name }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

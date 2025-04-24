@@ -117,10 +117,10 @@ class DateSessionForm(FlaskForm):
     session = QuerySelectField(
         'Session',
         query_factory=session_query,
-        get_label='name',
+        get_label=lambda s: f"{s.date} - {s.start_time}",
         allow_blank=False,
         validators=[DataRequired()],
-        render_kw={'id': 'session'}
+        render_kw={'id': 'session', 'size': 3}
     )
     submit = SubmitField('Submit')
 
@@ -295,7 +295,6 @@ class AllowanceForm(FlaskForm):
     )
     rate = FloatField("Rate", validators=[DataRequired()], render_kw={"placeholder": "Enter an amount"})
     submit = SubmitField('Set Rate')
-
 
 
 class SessionForm(FlaskForm):
