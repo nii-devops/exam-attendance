@@ -6,24 +6,28 @@
 
 {% block content %}
 
-<div style="background-color: whitesmoke;" class="container mt-5 py-3 px-5">
+<div style="margin-bottom: 100px; padding-bottom: 50px;" class="container mt-5 py-3 px-5">
     <h2 class="text-center bg-light">Attendance Reports</h2>
     <table class="table table-bordered table-striped mt-4 bg-white shadow-lg">
         <thead>
             <tr class="bg-info">
+                <th>#</th>
                 <th>Title</th>
                 <th>Name</th>
                 <th>Department</th>
+                <th>Category</th>
                 <th>Session Count</th>
             </tr>
         </thead>
         <tbody>
-            {% for user in users %}
+            {% for user in staff %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td>{% if user.title_id %}{{ user.title.title }}{% endif %}</td>
-                <td>{{user.surname}} {{user.first_name}}</td>
+                <td>{{user.first_name}} {{user.surname}} </td>
                 <td>{{user.department.name}}</td>
-                <td>{{user.session_count}}</td>
+                <td>{{user.category.name}}</td>
+                <td style="font-size: 1.2rem;" class="text-center"><strong>{{user.session_count}}</strong></td>
             </tr>
             {% endfor %}
         </tbody>

@@ -7,7 +7,7 @@ from app.models import *
 from app.data import *
 from app import db
 from flask_bootstrap import Bootstrap5
-from sqlalchemy import func, or_, case, desc
+from sqlalchemy import func, or_, case, desc, distinct
 from sqlalchemy.exc import IntegrityError
 import pdfkit
 from io import BytesIO
@@ -1307,11 +1307,37 @@ def download_broadsheet_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
+
 @bp.route('/attendance/summary')
 def attendance_summary():
-    return
+    # 1) Reset all user counts
+    for u in User.query:
+        u.session_count = 0
 
+    # 2) Count distinct sessions per user in one go
+    rows = (
+        db.session.query(
+            Attendance.user_id,
+            func.count(distinct(Attendance.session_id)).label('cnt')
+        )
+        .group_by(Attendance.user_id)
+        .all()
+    )
+    # 3) Apply those counts back to each User
+    for user_id, cnt in rows:
+        user = User.query.get(user_id)
+        if user:
+            user.session_count = cnt
 
+    db.session.commit()
+
+    # 4) Render your summary
+    staff = User.query.order_by(User.surname).all()
+    return render_template(
+        'attendance_report.html',
+        title='Attendance Summary',
+        staff=staff
+    )
 
 @bp.route('/session-count/clear', methods=['GET', 'POST'])
 def clear_count():
