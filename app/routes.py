@@ -91,6 +91,7 @@ def create_graduate_type(data=graduate_types):
             )
     db.session.commit()
 
+
 def create_venues():
     for i in rooms:
         if not Venue.query.filter_by(name=i).first():
@@ -99,6 +100,7 @@ def create_venues():
                 )
     db.session.commit()
     return 0
+
 
 def create_levels(data=levels):
     for key, val in data.items():
@@ -222,7 +224,7 @@ def create_prerequisites():
     create_courses()
     create_graduate_type()
     create_levels()
-    create_users()
+    #create_users()
     create_venues()
     return redirect(url_for('main.home'))
 
@@ -338,7 +340,7 @@ def create_admin():
     form = AdminUserForm()
     if form.validate_on_submit():
         title      = form.title.data.strip()
-        surname    = form.surname.data
+        surname    = form.surname.data.upper()
         first_name = form.first_name.data
         email      = form.email.data
         phone      = form.phone.data
@@ -493,27 +495,17 @@ def create_user():
 
 @bp.route('/users/create', methods=['GET', 'POST'])
 def create_users():
-    df = pd.read_excel(
-        f'{UPLOAD_FOLDER}/list.xlsx',
-        header=0,
-        dtype={
-            'title': str,
-            'surname': str,
-            'first_name': str,
-            'department': str,
-            'category': str,
-            'role': str  # Ensure 'role' is read as string
-        }
-    )
     
-    for index, row in df.iterrows():
+    
+    for i in staff_list:
         # Extract values; strip where applicable
-        title_str = row['title']
-        surname = row['surname'].strip()
-        first_name = row['first_name'].strip()
-        department_str = row['department'].strip()
-        staff_category_str = row['category'].strip()
-        role = row["role"]
+        title_str = i['title']
+        surname = i['surname'].strip()
+        first_name = i['first_name'].strip()
+        department_str = i['department'].strip()
+        staff_category_str = i['category'].strip()
+        role = i["role"]
+        #print(f"{title_str} \n{surname} \n{first_name} \n{department_str} \n{staff_category_str}")
 
         # Skip creating user if already exists
         if User.query.filter_by(surname=surname.upper(), first_name=first_name).first():
@@ -521,39 +513,37 @@ def create_users():
             continue
 
         # Get Category
-        category = Category.query.filter_by(name=staff_category_str).first()
-        if not category:
-            #flash('Category does not exist', 'warning')
-            continue
+        if not Category.query.filter_by(name=staff_category_str).first():
+            db.session.add(
+                Category(name=staff_category_str)
+            )
+            db.session.commit()
 
         # Get Department
-        department = Department.query.filter_by(name=department_str).first()
-        if not department:
-            #flash('Department does not exist', 'warning')
-            continue
+        if not Department.query.filter_by(name=department_str).first():
+            db.session.add(
+                Department(name=department_str)
+            )
+            db.session.commit()
+
+        if not Title.query.filter_by(title=title_str).first():
+            db.session.add(
+                Title(title=title_str)
+            )
+            db.session.commit()
 
         title_obj = Title.query.filter_by(title=title_str).first()
-        if title_obj:
-            new_user = User(
-                title_id=title_obj.id,
-                surname=surname.upper(),
-                first_name=first_name,
-                department_id=department.id,
-                category_id=category.id,
-                role=role
-            )
-
-        else:
-            # Create user without a title
-            new_user = User(
-                #title_id=None,
-                surname=surname.upper(),
-                first_name=first_name,
-                department_id=department.id,
-                category_id=category.id,
-                role=role
-            )
-        
+        dept_obj = Department.query.filter_by(name=department_str).first()
+        cat_obj = Category.query.filter_by(name=staff_category_str).first()
+            
+        new_user = User(
+            title_id=title_obj.id,
+            surname=surname.upper(),
+            first_name=first_name,
+            department_id=dept_obj.id,
+            category_id=cat_obj.id,
+            role=role
+        )
         db.session.add(new_user)
 
     # Commit all changes after processing the file
@@ -563,24 +553,25 @@ def create_users():
   
 
 @bp.route('/users/view', methods=['GET', 'POST'])
-def get_users():
-    #prof_id = 
+def get_users(): 
     staff = User.query.order_by(
-        User.title_id == Title.query.filter_by(title='Rev. Prof.').first().id,
-        User.title_id == Title.query.filter_by(title='Prof.').first().id
+        User.surname
         ).all()
     return render_template('all_staff.html', title='View Users', heading='Staff List', staff=staff)
 
 
 @bp.route('/user/edit/<int:user_id>', methods=['GET', 'POST'])
 def edit_user(user_id):
-    form=UserForm()
-    user = User.query.get(user_id)
-    form.title.data = user.title
-    form.surname.data = user.surname
-    form.first_name.data = user.first_name
-    form.department.data = user.department
-    form.category.data = user.category
+    form = UserForm()
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'GET':
+        form.title.data = user.title
+        form.surname.data = user.surname
+        form.first_name.data = user.first_name
+        form.department.data = user.department
+        form.category.data = user.category
+
     if form.validate_on_submit():
         user.title_id = form.title.data.id
         user.surname = form.surname.data
@@ -590,7 +581,8 @@ def edit_user(user_id):
 
         db.session.commit()
         return redirect(url_for('main.get_users'))
-    return render_template('add_user.html', title='Create User', heading='Create User', form=form)
+
+    return render_template('add_user.html', title='Edit User', heading='Edit User', form=form)
 
 
 @bp.route('/user/delete/<int:user_id>', methods=['GET', 'POST'])
@@ -1214,7 +1206,7 @@ def attendance_broadsheet():
     sessions_q = Session.query
     if selected_date:
         sessions_q = sessions_q.filter(Session.date == selected_date)
-    sessions = sessions_q.order_by(Session.start_time).all()
+    sessions = sessions_q.order_by(Session.date).all()
 
     # 3) Fetch all attendance records for that same date
     attend_q = Attendance.query.join(Session)
@@ -1313,7 +1305,6 @@ def attendance_summary():
     # 1) Reset all user counts
     for u in User.query:
         u.session_count = 0
-
     # 2) Count distinct sessions per user in one go
     rows = (
         db.session.query(
@@ -1331,13 +1322,51 @@ def attendance_summary():
 
     db.session.commit()
 
+    latest_session = Session.query.order_by(desc(Session.id)).first()
+
     # 4) Render your summary
     staff = User.query.order_by(User.surname).all()
     return render_template(
         'attendance_report.html',
         title='Attendance Summary',
-        staff=staff
+        staff=staff,
+        session=latest_session
     )
+
+
+@bp.route('/attendance/summary/it-staff')
+def it_staff_summary():
+    # 1) Reset all user counts
+    for u in User.query:
+        u.session_count = 0
+    # 2) Count distinct sessions per user in one go
+    rows = (
+        db.session.query(
+            Attendance.user_id,
+            func.count(distinct(Attendance.session_id)).label('cnt')
+        )
+        .group_by(Attendance.user_id)
+        .all()
+    )
+    # 3) Apply those counts back to each User
+    for user_id, cnt in rows:
+        user = User.query.get(user_id)
+        if user:
+            user.session_count = cnt
+
+    db.session.commit()
+
+    latest_session = Session.query.order_by(desc(Session.id)).first()
+
+    # 4) Render your summary
+    staff = User.query.filter_by(role='Biometric Staff - IT').order_by(desc(User.session_count)).all()
+    return render_template(
+        'attendance_report.html',
+        title='Attendance Summary',
+        staff=staff,
+        session=latest_session
+    )
+
 
 @bp.route('/session-count/clear', methods=['GET', 'POST'])
 def clear_count():
@@ -1398,7 +1427,7 @@ def download_schedule_pdf(session_id):
     html = render_template(
         'schedule_pdf.html',
         schedule=schedule,
-        heading=f"Schedule for {date_str or 'All Dates'} || {sess.session_number.name}"
+        heading=f"Schedule for {date_str or 'All Dates'}"
     )
     # === Windows-specific wkhtmltopdf config ===
     wkhtmltopdf_path = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
@@ -1412,6 +1441,29 @@ def download_schedule_pdf(session_id):
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
+
+@bp.route('/report-summary.pdf/<int:session_id>')
+def download_summary_pdf(session_id):
+    session = Session.query.get_or_404(session_id)
+    staff = User.query.order_by(User.surname).all()
+    # Render the table-only template
+    html = render_template(
+        'download_summary_pdf.html',
+        staff=staff,
+        heading=f"ATTENDANCE REPORT FOR {session.semester.semester.upper()} | {session.academic_year.year.upper()}"
+    )
+
+    # === Windows-specific wkhtmltopdf config ===
+    wkhtmltopdf_path = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+    # Generate PDF
+    pdf = pdfkit.from_string(html, False, configuration=config)
+    # Send as download
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    filename = f"Summary_Report_{session.semester.semester}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+    return response
 
 
 # ########################

@@ -17,7 +17,7 @@
     <table>
         <thead>
         <tr>
-            <th>#</th><th>Staff</th><th>Department</th><th>Venue</th>
+            <th>#</th><th>Staff</th><th>Department</th><th>Venue</th><th>Session</th>
         </tr>
         </thead>
         <tbody>
@@ -27,6 +27,7 @@
             <td>{{ sch.user.first_name }} {{ sch.user.surname }}</td>
             <td>{{ sch.user.department.name }}</td>
             <td>{{ sch.venue.name }}</td>
+            <td>{{ sch.session.session_number.name }}</td>
         </tr>
         {% endfor %}
         </tbody>

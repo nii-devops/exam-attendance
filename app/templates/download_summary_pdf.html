@@ -1,24 +1,20 @@
-{% extends "base.html" %}
+<!doctype html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+        <style>
+            /* minimal styling for PDF */
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 0.5em; border: 1px solid #333; }
+            th { background: #007bff; color: #fff; }
+            h3 { text-align: center; }
+        </style>
+    </head>
 
-{% block title %}
-    {{title}}
-{% endblock title %}
 
-{% block content %}
-
-<div style="margin-bottom: 100px; padding-bottom: 50px;" class="container mt-5 py-3 px-5">
-    <h2 class="text-center bg-light">Attendance Summary Report</h2>
-    <hr>
-        <div>
-            <div class="text-center mb-3">
-                <a href="{{ url_for('main.download_summary_pdf', session_id=session.id) }}"
-                  class="btn btn-primary">
-                <i class="bi bi-file-earmark-pdf"></i>
-                  Download PDF
-                </a>
-            </div>
-        </div>
-    <table class="table table-bordered table-striped mt-4 bg-white shadow-lg">
+    <body>
+    <h3>{{ heading }}</h3>
+    <table>
         <thead>
             <tr class="bg-info">
                 <th>#</th>
@@ -29,6 +25,7 @@
                 <th>Session Count</th>
             </tr>
         </thead>
+
         <tbody>
             {% for user in staff %}
             <tr>
@@ -41,7 +38,7 @@
             </tr>
             {% endfor %}
         </tbody>
+        </tbody>
     </table>
-</div>
-
-{% endblock content %}
+    </body>
+</html>

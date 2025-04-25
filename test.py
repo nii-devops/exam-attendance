@@ -84,3 +84,23 @@ cohss_programmes = {
 for college, faculties in cohss_programmes.items():
     for faculty, departments in faculties.items():
         pprint({college: faculty})
+
+
+
+upload_file = r"app\static\uploads\list.xlsx"
+
+import pandas as pd
+
+# Read the Excel file
+df = pd.read_excel('app/static/uploads/list.xlsx')
+
+# Convert to list of dictionaries
+records = df.to_dict(orient='records')
+
+#pprint(records)
+
+from app.data import staff_list
+
+
+print(len(staff_list))
+

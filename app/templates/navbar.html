@@ -27,8 +27,9 @@
                         <li><a class="dropdown-item " href="#">View Exams</a></li>
                        <hr>
                         <li><a class="dropdown-item " href="{{ url_for('main.get_schedule_sessions') }}">Staff Schedule</a></li>
-                        <li><a class="dropdown-item " href="{{ url_for('main.attendance_summary') }}">Attendance Schedule</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('main.attendance_broadsheet') }}">Attendance Broadsheet</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.attendance_summary') }}">Summary Report</a></li>
+                        <li><a class="dropdown-item " href="{{ url_for('main.it_staff_summary') }}">IT Staff Report</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.attendance_broadsheet') }}">Broadsheet Report</a></li>
                     </ul>
                 </li>
                 
@@ -62,6 +63,7 @@
                         <li><a class="dropdown-item" href="{{ url_for('main.create_academic_year') }}">Create Academic Year</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.create_course') }}">Create Course</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.create_courses') }}">Create Courses</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.create_users') }}">Create Users</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.create_programme') }}">Create Programme</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.create_session_numbers') }}">Create Session Numbers</a></li>
                     </ul>
