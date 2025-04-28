@@ -9,15 +9,17 @@
 <div style="margin-bottom: 100px; padding-bottom: 50px;" class="container mt-5 py-3 px-5">
     <h2 class="text-center bg-light">Attendance Summary Report</h2>
     <hr>
-        <div>
-            <div class="text-center mb-3">
+        
+    <div>
+        <div class="text-center mb-3">
                 <a href="{{ url_for('main.download_summary_pdf', session_id=session.id) }}"
                   class="btn btn-primary">
                 <i class="bi bi-file-earmark-pdf"></i>
                   Download PDF
                 </a>
-            </div>
         </div>
+    </div>
+
     <table class="table table-bordered table-striped mt-4 bg-white shadow-lg">
         <thead>
             <tr class="bg-info">

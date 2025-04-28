@@ -12,8 +12,6 @@ from sqlalchemy.exc import IntegrityError
 import pdfkit
 from io import BytesIO
 import pandas as pd
-
-
 import os
 import pandas as pd
 
@@ -301,13 +299,13 @@ def admin():
 
 
 @bp.route('/admin-panel')
+@login_required
 def admin_panel():
     # Get total staff count
     total_staff = len([st for st in User.query.all()])
     academic_years = AcademicYear.query.order_by(AcademicYear.id).all()
     ac_years = len(academic_years)
-
-     # Get all staff first
+    # Get all staff first
     all_staff = User.query.all()
     
     # Sort them based on title
@@ -333,20 +331,21 @@ def admin_panel():
                            total_progs=total_progs)
 
 
+
 # ##########################
 ####### USERS ##############
 @bp.route('/admin/create', methods=['GET', 'POST'])
+@login_required
 def create_admin():
     form = AdminUserForm()
     if form.validate_on_submit():
         title      = form.title.data.strip()
         surname    = form.surname.data.upper()
-        first_name = form.first_name.data
-        email      = form.email.data
-        phone      = form.phone.data
+        first_name = form.first_name.data.strip()
+        email      = form.email.data.strip()
+        phone      = form.phone.data.strip()
         department = form.department.data.strip()
         category   = form.category.data.strip()
-
         # ensure Department exists
         if not Department.query.filter_by(name=department).first():
             db.session.add( Department(name=department) )
@@ -356,12 +355,10 @@ def create_admin():
         if not Title.query.filter_by(title=title).first():
             db.session.add( Title(title=title) )
             db.session.commit()
-
         # ensure Category exists
         if not Category.query.filter_by(name=category).first():
             db.session.add( Category(name=category) )
             db.session.commit()
-
         # now create the User
         if not User.query.filter_by(email=email).first():
             title_id    = Title.query.filter_by(title=title).first().id
@@ -390,14 +387,11 @@ def create_admin():
                     db.session.commit()
                     flash('Admin user created.', 'success')
                     return redirect(url_for('main.home'))
-
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Error: {e}", 'danger')
-
             else:
                 flash('Either title, department or category does not exist', 'danger')
-
     return render_template('signup.html', form=form, title='Create Admin', heading='Create Admin Account')
 
 
@@ -496,7 +490,6 @@ def create_user():
 @bp.route('/users/create', methods=['GET', 'POST'])
 def create_users():
     
-    
     for i in staff_list:
         # Extract values; strip where applicable
         title_str = i['title']
@@ -586,18 +579,27 @@ def edit_user(user_id):
 
 
 @bp.route('/user/delete/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     if not user:
         msg = flash('User not found!', 'danger')
         return f"Error: {msg}"
-    db.session.delete(user)
-    db.session.commit()
-    msg = flash('User deleted', 'sucess')
-    return f"Success: {msg}"
+    if current_user.id == 1 or current_user.is_admin:
+        try:
+            db.session.delete(user)
+            db.session.commit()
+            msg = flash('User deleted', 'sucess')
+            return f"Success: {msg}"
+        except Exception as e:
+            msg = flash('Error: {e}', 'danger')
+            return msg
+    else:
+        return flash('User unauthorized to perform this action', 'info')
 
 
 @bp.route('/attendance', methods=['GET', 'POST'])
+@login_required
 def attendance():
     users = User.query.order_by(User.surname, User.first_name).all()
     titles = Title.query.all()
@@ -989,12 +991,21 @@ def view_exam_session():
 
 
 @bp.route('/session/delete/<int:session_id>', methods=['GET', 'POST'])
+@login_required
 def delete_exam_session(session_id):
     session = Session.query.get(session_id)
-    db.session.delete(session)
-    db.session.commit()
-    msg = flash('Session deleted', 'success')
-    return f"{msg}"
+    if current_user.id == 1 or current_user.is_admin:
+        try:
+            db.session.delete(session)
+            db.session.commit()
+            msg = flash('Session deleted', 'success')
+            return f"{msg}"
+        except Exception as e:
+            flash(f'An error occuured: {e}', 'danger')
+            return redirect(url_for('main.home'))
+    else:
+        flash(f'User unauthorized to perform this action', 'danger')
+        return redirect(url_for('main.home'))
 
 
 @bp.route('/sessions/daily')
@@ -1004,6 +1015,7 @@ def daily_exam_sessions():
 
 
 @bp.route('/session/edit/<int:session_id>', methods=['GET', 'POST'])
+@login_required
 def edit_session(session_id):
     session = Session.query.get(session_id)
     form = Session()
@@ -1031,9 +1043,11 @@ def edit_session(session_id):
     return render_template('login.html', title='Create Session', heading="Create Session", form=form)
 
 
-@bp.route('/session/edit/<int:session_id>', methods=['GET', 'POST'])
+@bp.route('/session/delete/<int:session_id>', methods=['GET', 'POST'])
+@login_required
 def delete_session(session_id):
-    if session_id:
+    session = Session.query.get_or_404(session_id)
+    if session and (current_user.id == 1 or current_user.is_admin==True):
         try:
             db.session.delete(session)
             db.session.commit()
@@ -1041,7 +1055,7 @@ def delete_session(session_id):
         except Exception as e:
             flash(f"Error occurred: {e}", 'danger')
             return redirect()
-    return redirect
+    return flash('Success', 'success')
 
 
 @bp.route('/get-date-session', methods=['GET', 'POST'])
@@ -1080,6 +1094,7 @@ def get_venues_for_session(session_id):
 ###### ATTENDANCE & SCHEDULE ######
 
 @bp.route('/biometric-schedule', methods=['GET', 'POST'])
+@login_required
 def biometric_schedule():
     form = BiometricScheduleForm()
     if form.validate_on_submit():
@@ -1118,6 +1133,7 @@ def view_schedule(session_id):
 
 
 @bp.route('/staff/take-attendance', methods=['GET', 'POST'])
+@login_required
 def staff_attendance():
     selected_date = request.args.get('date')
     form = AttendanceForm(selected_date=selected_date)
@@ -1191,7 +1207,48 @@ def staff_attendance():
 
 
 
+@bp.route('/attendance/transfer', methods=['GET', 'POST'])
+@login_required
+def transfer_attendance():
+    form = AttendanceTransferForm()
+    if form.validate_on_submit():
+        # get IDs from the hidden fields
+        transfer_id  = int(form.transfer_staff_id.data)
+        receive_id   = int(form.receiving_staff_id.data)
+
+        # 1) Move each attendance row
+        attendances = Attendance.query.filter_by(user_id=transfer_id).all()
+        for att in attendances:
+            # create new for the receiving user
+            new_att = Attendance(
+                user_id   = receive_id,
+                session_id= att.session_id,
+                venue_id  = att.venue_id,
+                timestamp = att.timestamp
+            )
+            db.session.add(new_att)
+            # delete the old record
+            db.session.delete(att)
+
+        # 2) Delete the “transfer” user altogether
+        user_to_remove = User.query.get(transfer_id)
+        if user_to_remove:
+            db.session.delete(user_to_remove)
+
+        # 3) Commit once
+        db.session.commit()
+        flash('Attendance records moved and user deleted successfully.', 'success')
+        return redirect(url_for('main.attendance_summary'))  # or wherever makes sense
+
+    return render_template(
+        'attendance_transfer.html',
+        title='Transfer Attendance',
+        form=form
+    )
+
+
 @bp.route('/attendance/broadsheet')
+@login_required
 def attendance_broadsheet():
     # 1) Parse the date filter as before
     date_str = request.args.get('date')
@@ -1229,6 +1286,7 @@ def attendance_broadsheet():
 
 
 @bp.route('/attendance/broadsheet/download-excel')
+@login_required
 def download_broadsheet_excel():
     # 1) Parse date filter
     date_str = request.args.get('date')
@@ -1301,6 +1359,7 @@ def download_broadsheet_excel():
 
 
 @bp.route('/attendance/summary')
+@login_required
 def attendance_summary():
     # 1) Reset all user counts
     for u in User.query:
@@ -1335,6 +1394,7 @@ def attendance_summary():
 
 
 @bp.route('/attendance/summary/it-staff')
+@login_required
 def it_staff_summary():
     # 1) Reset all user counts
     for u in User.query:
@@ -1369,6 +1429,7 @@ def it_staff_summary():
 
 
 @bp.route('/session-count/clear', methods=['GET', 'POST'])
+@login_required
 def clear_count():
     if not User.query.all():
         flash('No sessions to clear', 'info')
@@ -1385,6 +1446,7 @@ def clear_count():
 ###### PROGRAMMES ######
 
 @bp.route('/programme/create', methods=['GET', 'POST'])
+@login_required
 def create_programme():
     form = ProgrammeForm()
     if form.validate_on_submit():
@@ -1564,33 +1626,4 @@ def get_staff():
     return jsonify([{'id': u.id, 'name': f"{u.first_name} {u.surname}"} for u in staff])
 
 
-
-
-"""
-# Route to get sessions for a specific date
-@bp.route('/get_sessions')
-def get_sessions():
-    date = request.args.get('date')
-    if date:
-        try:
-            # Convert string date to datetime object
-            parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
-            
-            # Get sessions for the specified date
-            sessions = Session.query.filter(
-                db.func.date(Session.date) == parsed_date
-            ).all()
-            
-            # Format the sessions for the dropdown
-            session_list = [
-                {'id': s.id, 'name': f"{s.name} - {s.start_time}"}
-                for s in sessions
-            ]
-            return jsonify(session_list)
-        except ValueError:
-            # Invalid date format
-            return jsonify({'error': 'Invalid date format'}), 400
-    return jsonify([])
-
-"""
 

@@ -465,6 +465,9 @@ class CourseForm(FlaskForm):
 
 
 
+
+
+
 class AttendanceForm(FlaskForm):
     date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()], render_kw={'id': 'date_field'})
 
@@ -513,6 +516,37 @@ class AttendanceForm(FlaskForm):
             ).all()
         else:
             self.session.query_factory = lambda: Session.query.all()
+
+
+class AttendanceTransferForm(FlaskForm):
+    transfer_staff_id = HiddenField(
+        'Transferring Staff',
+        render_kw={'id': 'transfer_staff_id'}
+    )
+    transfer_staff_search = StringField(
+        'Staff to Transfer From',
+        render_kw={
+            'id': 'transfer_staff_search',
+            'placeholder': 'Type to search staff...'
+        }
+    )
+
+    receiving_staff_id = HiddenField(
+        'Receiving Staff',
+        render_kw={'id': 'receiving_staff_id'}
+    )
+    receiving_staff_search = StringField(
+        'Staff to Receive Into',
+        render_kw={
+            'id': 'receiving_staff_search',
+            'placeholder': 'Type to search staff...'
+        }
+    )
+
+    submit = SubmitField(
+        'Submit',
+        render_kw={'id': 'submit_button'}
+    )
 
 
 
