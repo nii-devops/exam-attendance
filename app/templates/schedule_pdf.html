@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+        <style>
+            /* minimal styling for PDF */
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 0.5em; border: 1px solid #333; }
+            th { background: #007bff; color: #fff; }
+            h3 { text-align: center; }
+        </style>
+    </head>
+
+
+    <body>
+    <h3>{{ heading }}</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th><th>Staff</th><th>Department</th><th>Venue</th><th>Session</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for sch in schedule %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ sch.user.first_name }} {{ sch.user.surname }}</td>
+            <td>{{ sch.user.department.name }}</td>
+            <td>{{ sch.venue.name }}</td>
+            <td>{{ sch.session.session_number.name }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </body>
+</html>

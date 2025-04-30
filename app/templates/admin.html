@@ -1,579 +1,732 @@
-<!-- templates/base.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin Panel{% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #4e73df;
-            --secondary-color: #858796;
-            --success-color: #1cc88a;
-            --info-color: #36b9cc;
-            --warning-color: #f6c23e;
-            --danger-color: #e74a3b;
-            --light-color: #f8f9fc;
-            --dark-color: #5a5c69;
-        }
-        
-        body {
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f8f9fc;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15);
-            position: fixed;
-            z-index: 1;
-            top: 0;
-            left: 0;
-            overflow-x: hidden;
-            padding-top: 20px;
-            transition: 0.3s;
-        }
-        
-        .sidebar-brand {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem 1rem;
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 800;
-            margin-bottom: 2rem;
-        }
-        
-        .sidebar hr {
-            margin: 0 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        
-        .sidebar-heading {
-            padding: 0.7rem 1rem;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.4);
-        }
-        
-        .sidebar .nav-item {
-            position: relative;
-            margin-bottom: 0.2rem;
-        }
-        
-        .sidebar .nav-link {
-            display: flex;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 0.8rem 1rem;
-            transition: all 0.2s ease;
-        }
-        
-        .sidebar .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .sidebar .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-weight: 700;
-        }
-        
-        .sidebar .nav-link i {
-            margin-right: 0.75rem;
-            width: 1.25rem;
-            text-align: center;
-        }
-        
-        /* Main Content */
-        #content-wrapper {
-            margin-left: 250px;
-            min-height: 100vh;
-            padding-bottom: 80px;
-            position: relative;
-            transition: 0.3s;
-        }
-        
-        .topbar {
-            height: 4.375rem;
-            background-color: white;
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-        }
-        
-        .topbar .navbar-search {
-            width: 30rem;
-        }
-        
-        .topbar .dropdown-menu {
-            min-width: calc(100% - 1.5rem);
-            right: 0.75rem;
-        }
-        
-        .dropdown-item.active, .dropdown-item:active {
-            background-color: var(--primary-color);
-        }
-        
-        /* Cards */
-        .card {
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .1);
-            border: none;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .card-header {
-            background-color: #f8f9fc;
-            border-bottom: 1px solid #e3e6f0;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .card-header h6 {
-            margin-bottom: 0;
-            font-size: 1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        
-        /* Dashboard Cards */
-        .card-stats {
-            border-left: 4px solid;
-        }
-        
-        .card-stats-primary {
-            border-left-color: var(--primary-color);
-        }
-        
-        .card-stats-success {
-            border-left-color: var(--success-color);
-        }
-        
-        .card-stats-info {
-            border-left-color: var(--info-color);
-        }
-        
-        .card-stats-warning {
-            border-left-color: var(--warning-color);
-        }
-        
-        .text-primary {
-            color: var(--primary-color) !important;
-        }
-        
-        .text-success {
-            color: var(--success-color) !important;
-        }
-        
-        .text-info {
-            color: var(--info-color) !important;
-        }
-        
-        .text-warning {
-            color: var(--warning-color) !important;
-        }
-        
-        /* Footer */
-        footer {
-            background-color: white;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Toggle Button */
-        #sidebarToggle {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        #sidebarToggle:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 0;
-                padding-top: 60px;
-            }
-            
-            .sidebar-brand {
-                visibility: hidden;
-            }
-            
-            #content-wrapper {
-                margin-left: 0;
-            }
-            
-            .sidebar.toggled {
-                width: 250px;
-            }
-            
-            .sidebar.toggled .sidebar-brand {
-                visibility: visible;
-            }
-            
-            #content-wrapper.toggled {
-                margin-left: 250px;
-            }
-        }
-        
-        /* Utility Classes */
-        .bg-gradient-primary {
-            background-color: var(--primary-color);
-            background-image: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
-        }
-        
-        .shadow {
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15) !important;
-        }
-        
-        .link-light {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-        }
-        
-        .link-light:hover {
-            color: white;
-        }
-        
-        /* Status badges */
-        .badge-status {
-            padding: 0.4rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .badge-pending {
-            background-color: #f6c23e30;
-            color: #f6c23e;
-        }
-        
-        .badge-processing {
-            background-color: #4e73df30;
-            color: #4e73df;
-        }
-        
-        .badge-shipped {
-            background-color: #36b9cc30;
-            color: #36b9cc;
-        }
-        
-        .badge-delivered {
-            background-color: #1cc88a30;
-            color: #1cc88a;
-        }
-        
-        .badge-cancelled {
-            background-color: #e74a3b30;
-            color: #e74a3b;
-        }
-        
-        /* Login Page */
-        .bg-login-image {
-            background: url('https://source.unsplash.com/K4mSJ7kc0As/600x800');
-            background-position: center;
-            background-size: cover;
-        }
-        
-        .login-form {
-            min-height: 100vh;
-            background-color: #f8f9fc;
-        }
-        
-        /* Loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-    </style>
-    {% block extra_css %}{% endblock %}
-</head>
-<body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-
-    {% if current_user.is_authenticated %}
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-store-alt me-2"></i>
-            <span>Admin Panel</span>
-        </div>
-        
-        <!-- Divider -->
-        <hr class="sidebar-divider my-0">
-        
-        <!-- Nav Item - Dashboard -->
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path == url_for('dashboard') }}" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-            
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
-            
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path.startswith('/products') }}" href="{{ url_for('products') }}">
-                    <i class="fas fa-fw fa-box"></i>
-                    <span>Products</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path.startswith('/orders') }}" href="{{ url_for('orders') }}">
-                    <i class="fas fa-fw fa-shopping-cart"></i>
-                    <span>Orders</span>
-                </a>
-            </li>
-            
-            {% if current_user.role == 'admin' %}
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path.startswith('/users') }}" href="{{ url_for('users') }}">
-                    <i class="fas fa-fw fa-users"></i>
-                    <span>Users</span>
-                </a>
-            </li>
-            {% endif %}
-            
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-            
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Settings
-            </div>
-            
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path == url_for('profile') }}" href="{{ url_for('profile') }}">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Profile</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link {{ 'active' if request.path == url_for('settings') }}" href="{{ url_for('settings') }}">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('logout') }}">
-                    <i class="fas fa-fw fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-    
-    <!-- Content Wrapper -->
-    <div id="content-wrapper">
-        <!-- Top Navbar -->
-        <nav class="topbar navbar navbar-expand navbar-light bg-white mb-4">
-            <!-- Sidebar Toggle -->
-            <button id="sidebarToggle" class="btn btn-link rounded-circle me-3">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <!-- Search Form -->
-            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search">
-                    <button class="btn btn-primary" type="button">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Navbar -->
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-bell fa-fw"></i>
-                        <span class="badge bg-danger badge-counter">3+</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="alertsDropdown">
-                        <h6 class="dropdown-header">Alerts Center</h6>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                            <div class="me-3">
-                                <div class="icon-circle bg-primary">
-                                    <i class="fas fa-file-alt text-white"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="small text-gray-500">April 2, 2025</div>
-                                <span>New order received!</span>
-                            </div>
-                        </a>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                            <div class="me-3">
-                                <div class="icon-circle bg-warning">
-                                    <i class="fas fa-exclamation-triangle text-white"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="small text-gray-500">April 1, 2025</div>
-                                <span>Low stock warning: 5 products</span>
-                            </div>
-                        </a>
-                        <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                    </div>
-                </li>
-                
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ current_user.username }}</span>
-                        <i class="fas fa-user-circle fa-fw"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="{{ url_for('profile') }}">
-                            <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
-                            Profile
-                        </a>
-                        <a class="dropdown-item" href="{{ url_for('settings') }}">
-                            <i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>
-                            Settings
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{{ url_for('logout') }}">
-                            <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
-                            Logout
-                        </a>
-                    </div>
-                </li>
-            </ul>
-        </nav>
-        
-        <!-- Main Content -->
-        <div class="container-fluid px-4">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            {% block content %}{% endblock %}
-        </div>
-        
-        <!-- Footer -->
-        <footer class="border-top">
-            <div class="container">
-                <div class="text-center">
-                    <span>Copyright © Your Website 2025</span>
-                </div>
-            </div>
-        </footer>
-    </div>
-    {% else %}
-        {% block auth_content %}{% endblock %}
-    {% endif %}
-    
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Custom scripts -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hide loading overlay
-            document.getElementById('loadingOverlay').style.display = 'none';
-            
-            // Sidebar Toggle
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const contentWrapper = document.getElementById('content-wrapper');
-            
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    sidebar.classList.toggle('toggled');
-                    contentWrapper.classList.toggle('toggled');
-                });
-            }
-            
-            // Close alerts after 5 seconds
-            setTimeout(function() {
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(function(alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                });
-            }, 5000);
-        });
-    </script>
-    
-    {% block extra_js %}{% endblock %}
-</body>
-</html>
-
-<!-- templates/login.html -->
 {% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
 
-{% block auth_content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-xl-10 col-lg-12 col-md-9">
-            <div class="card o-hidden border-0 shadow-lg my-5">
-                <div class="card-
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block style %}
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        padding: 48px 0 0;
+        background-color: rgb(12, 60, 122);
+    }
+    .sidebar-sticky {
+        position: relative;
+        top: 0;
+        height: calc(100vh - 48px);
+        padding-top: .5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    .nav-link {
+        font-weight: 500;
+        color: #333;
+    }
+    .nav-link.active {
+        color: #0e4580;
+    }
+    .card-details {
+        background-color: rgb(12, 60, 122);
+        color: white;
+    }
+    .card-title {
+        color: white;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<!-- Main Container -->
+<div style="min-height: 100vh;" class="container-fluid mb-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="row mt-5 text-center">
+                <h3>Admin Panel</h3>
+            </div>
+            <hr class="my-3">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="reports-tab" data-bs-toggle="tab" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="database-tab" data-bs-toggle="tab" href="#database" role="tab" aria-controls="database" aria-selected="false">Database tables</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="settings-tab" data-bs-toggle="tab" href="#settings" role="tab" aria-controls="settings" aria-selected="false">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="staff-tab" data-bs-toggle="tab" href="#staff" role="tab" aria-controls="staff" aria-selected="false">Staff</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="schedule-tab" data-bs-toggle="tab" href="#schedule" role="tab" aria-controls="schedule" aria-selected="false">Schedule</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="tab-content" id="myTabContent">
+                <!-- Dashboard Section -->
+                <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                    <h1 class="h2 mt-4 text-center py-3">Dashboard</h1>
+                    <div class="row mt-3">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="card shadow-lg">
+                                <div class="row g-0 align-items-center">
+                                  <div class="col-4 text-center">
+                                    <i class="bi bi-people display-4 text-primary"></i>
+                                  </div>
+                                  <div class="col-8 card-details">
+                                    <div class="card-body text-center">
+                                      <h6 class="card-title mb-1">Total Staff</h6>
+                                      <hr>
+                                      <p class="card-text fs-1 mb-0">{{total_staff}}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="card shadow-lg">
+                                <div class="row g-0 align-items-center">
+                                  <div class="col-4 text-center">
+                                    <i class="bi bi-calendar-event display-4 text-primary"></i>
+                                  </div>
+                                  <div class="col-8 card-details">
+                                    <div class="card-body text-center">
+                                      <h6 class="card-title mb-1">Total Sessions</h6>
+                                      <hr>
+                                      <p class="card-text fs-1 mb-0">{{ total_sessions }}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="card shadow-lg">
+                                <div class="row g-0 align-items-center">
+                                  <div class="col-4 text-center">
+                                    <i class="bi bi-question-circle display-4 text-primary"></i>
+                                  </div>
+                                  <div class="col-8 card-details">
+                                    <div class="card-body text-center">
+                                      <h6 class="card-title mb-1">Total Exams</h6>
+                                      <hr>
+                                      <p class="card-text fs-1 mb-0">{{ total_sessions }}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="card shadow-lg">
+                                <div class="row g-0 align-items-center">
+                                  <div class="col-4 text-center">
+                                    <i class="bi bi-people display-4 text-primary"></i>
+                                  </div>
+                                  <div class="col-8 card-details">
+                                    <div class="card-body text-center">
+                                      <h6 class="card-title mb-1">Total users</h6>
+                                      <hr>
+                                      <p class="card-text fs-1 mb-0">248</p>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                    <h1 class="h2 mt-4">Reports</h1>
+                    <table class="table table-striped mt-3">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Report A</td>
+                                <td>2023-01-01</td>
+                                <td>Completed</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Report B</td>
+                                <td>2023-01-02</td>
+                                <td>Pending</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Database Tables Section -->
+                <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+                    <div class="container-fluid">
+                        <div class="row admin-header">
+                          <div class="col-12 text-center">
+                            <h1>Admin Database Management</h1>
+                            <p class="text-muted">View and manage all database tables</p>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-12">
+                            <div class="accordion" id="databaseTablesAccordion">
+                                <!-- Academic Year Table -->
+                                <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingYears">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseYears" aria-expanded="false" aria-controls="collapseYears">
+                                    Academic Year <span class="badge bg-primary badge-count"> {{ ac_years }} </span>
+                                  </button>
+                                </h2>
+                                <div id="collapseYears" class="accordion-collapse collapse" aria-labelledby="headingYears" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                        <button class="btn btn-sm btn-success">Add Academic Year</button>
+                                        <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                        <!-- Spacer -->
+                                        <div class="flex-grow-1"></div>
+                                        <!-- Right side search form -->
+                                        <form class="d-flex" role="search">
+                                            <input
+                                            class="form-control form-control-sm me-2"
+                                            type="search"
+                                            placeholder="Search academic years..."
+                                            aria-label="Search"
+                                            >
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">
+                                            <i class="bi bi-search"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>ID</th>
+                                            <th>Academic Year</th>
+                                            <th>Start Year</th>
+                                            <th>End Year</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for yr in academic_years %}
+                                          <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ yr.year }}</td>
+                                            <td>{{ yr.start_year }}</td>
+                                            <td>{{ yr.end_year }}</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this item?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Staff Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingUsers">
+                                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUsers" aria-expanded="true" aria-controls="collapseUsers">
+                                    Staff <span class="badge bg-primary badge-count">{{ total_staff }}</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseUsers" class="accordion-collapse collapse show" aria-labelledby="headingUsers" data-bs-parent="#databaseTablesAccordion">
+                                    <div class="accordion-body">
+                                      <div class="admin-controls d-flex align-items-center mb-3">
+                                        <div>
+                                          <button class="btn btn-sm btn-success">Add User</button>
+                                          <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                        </div>
+                                        <div class="flex-grow-1"></div>
+                                        <!-- Filter input + button -->
+                                        <div class="d-flex">
+                                          <input
+                                            type="text"
+                                            id="userFilterInput"
+                                            class="form-control form-control-sm me-2"
+                                            placeholder="Filter by name…"
+                                          />
+                                          <button id="filterBtn" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-search"></i> Filter
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="table-container">
+                                        <table class="table table-striped table-hover" id="usersTable">
+                                          <thead>
+                                            <tr>
+                                              <th>ID</th>
+                                              <th>Title</th>
+                                              <th>Surname</th>
+                                              <th>First Name(s)</th>
+                                              <th>Department</th>
+                                              <th>Category</th>
+                                              <th>Actions</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {% for st in staff %}
+                                            <tr>
+                                              <td>{{ loop.index }}</td>
+                                              <td>{{ st.title.title if st.title else '' }}</td>
+                                              <td class="surname">{{ st.surname }}</td>
+                                              <td class="firstname">{{ st.first_name }}</td>
+                                              <td>{{ st.department.name }}</td>
+                                              <td>{{ st.category.name }}</td>
+                                              <td>
+                                                <a class="btn btn-sm btn-outline-warning" href="#">Edit</a>
+                                                <a class="btn btn-sm btn-outline-danger"
+                                                   onclick="return confirm('Are you sure you want to delete this user?');"
+                                                   href="#">Delete</a>
+                                              </td>
+                                            </tr>
+                                            {% endfor %}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+
+
+                              <!-- Department Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingDepartments">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDepartments" aria-expanded="false" aria-controls="collapseDepartments">
+                                    Departments <span class="badge bg-primary badge-count">{{total_depts}}</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseDepartments" class="accordion-collapse collapse" aria-labelledby="headingDepartments" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add Department</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {% for dept in depts %}
+                                          <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ dept.name }}</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this product?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+
+                              <!-- Programmes Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingProgrammes">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProgrammes" aria-expanded="false" aria-controls="collapseProgrammes">
+                                    Programmes <span class="badge bg-primary badge-count">{{total_progs}}</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseProgrammes" class="accordion-collapse collapse" aria-labelledby="headingProgrammes" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add Programme</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>ID</th>
+                                            <th>Programme</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {% for prog in programmes %}
+                                          <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ prog.name }}</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+
+                              <!-- Sessions Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingSessions">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessions" aria-expanded="false" aria-controls="collapseSessions">
+                                    Sessions <span class="badge bg-primary badge-count">78</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseSessions" class="accordion-collapse collapse" aria-labelledby="headingSessions" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add Session</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th>Academic Year</th>
+                                            <th>Semester</th>
+                                            <th>Exam Type</th>
+                                            <th>Session No.</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {% for sess in sessions %}
+                                          <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ sess.date }}</td>
+                                            <td>{{ sess.academic_year.year }}</td>
+                                            <td>{{ sess.semester.semester }}</td>
+                                            <td>{{ sess.exam_type.exam_type }}</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td>$2,342.50</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+
+                              <!-- Exams Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingOrders">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="false" aria-controls="collapseOrders">
+                                    Orders <span class="badge bg-primary badge-count">78</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseOrders" class="accordion-collapse collapse" aria-labelledby="headingOrders" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add New Order</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Total</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>A-10241</td>
+                                            <td>John Smith</td>
+                                            <td>2023-04-07</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td>$2,342.50</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>A-10242</td>
+                                            <td>Anna Miller</td>
+                                            <td>2023-04-08</td>
+                                            <td><span class="badge bg-warning text-dark">Processing</span></td>
+                                            <td>$189.99</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>A-10243</td>
+                                            <td>Robert Johnson</td>
+                                            <td>2023-04-09</td>
+                                            <td><span class="badge bg-danger">Cancelled</span></td>
+                                            <td>$549.00</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Orders Table -->
+                              <div class="accordion-item mb-3 shadow-md">
+                                <h2 class="accordion-header" id="headingOrders">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="false" aria-controls="collapseOrders">
+                                    Orders <span class="badge bg-primary badge-count">78</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseOrders" class="accordion-collapse collapse" aria-labelledby="headingOrders" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add New Order</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Total</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>A-10241</td>
+                                            <td>John Smith</td>
+                                            <td>2023-04-07</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td>$2,342.50</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>A-10242</td>
+                                            <td>Anna Miller</td>
+                                            <td>2023-04-08</td>
+                                            <td><span class="badge bg-warning text-dark">Processing</span></td>
+                                            <td>$189.99</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>A-10243</td>
+                                            <td>Robert Johnson</td>
+                                            <td>2023-04-09</td>
+                                            <td><span class="badge bg-danger">Cancelled</span></td>
+                                            <td>$549.00</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-info" href="http://">View</a>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                              <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');" href="http://">Delete</a>
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Settings Table -->
+                              <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingSettings">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="false" aria-controls="collapseSettings">
+                                    System Settings <span class="badge bg-primary badge-count">12</span>
+                                  </button>
+                                </h2>
+                                <div id="collapseSettings" class="accordion-collapse collapse" aria-labelledby="headingSettings" data-bs-parent="#databaseTablesAccordion">
+                                  <div class="accordion-body">
+                                    <div class="admin-controls">
+                                      <button class="btn btn-sm btn-success">Add New Setting</button>
+                                      <button class="btn btn-sm btn-secondary">Export CSV</button>
+                                    </div>
+                                    <div class="table-container">
+                                      <table class="table table-striped table-hover">
+                                        <thead>
+                                          <tr>
+                                            <th>ID</th>
+                                            <th>Setting Name</th>
+                                            <th>Value</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>1</td>
+                                            <td>site_name</td>
+                                            <td>Admin Dashboard</td>
+                                            <td>Name of the website</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>2</td>
+                                            <td>maintenance_mode</td>
+                                            <td>false</td>
+                                            <td>Enable/disable maintenance mode</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>3</td>
+                                            <td>items_per_page</td>
+                                            <td>25</td>
+                                            <td>Number of items to display per page</td>
+                                            <td>
+                                              <a class="btn btn-sm btn-outline-warning" href="http://">Edit</a>
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                    <h1 class="h2 mt-4">Settings</h1>
+                    <form class="mt-3">
+                        <div class="mb-3">
+                            <label for="siteName" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="siteName" value="My Admin Panel">
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminEmail" class="form-label">Admin Email</label>
+                            <input type="email" class="form-control" id="adminEmail" value="admin@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
+
+                <!-- Staff Section -->
+                <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
+                    <h1 class="h2 mt-4">Staff</h1>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">John Doe</h5>
+                                    <p class="card-text">Manager</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Jane Smith</h5>
+                                    <p class="card-text">Developer</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Section -->
+                <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+                    <h1 class="h2 mt-4">Schedule</h1>
+                    <ul class="list-group mt-3">
+                        <li class="list-group-item">Meeting at 10 AM</li>
+                        <li class="list-group-item">Lunch break at 12 PM</li>
+                        <li class="list-group-item">Project review at 3 PM</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<!-- FILTER USERS -->
+<script>
+    (function() {
+      const filterInput = document.getElementById('userFilterInput');
+      const filterBtn   = document.getElementById('filterBtn');
+      const table       = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+      function applyFilter() {
+        const term = filterInput.value.trim().toLowerCase();
+        Array.from(table.rows).forEach(row => {
+          const surname   = row.querySelector('.surname').textContent.toLowerCase();
+          const firstname = row.querySelector('.firstname').textContent.toLowerCase();
+          // show row if either field contains the term
+          const match = surname.includes(term) || firstname.includes(term);
+          row.style.display = match ? '' : 'none';
+        });
+      }
+      filterBtn.addEventListener('click', applyFilter);
+      // also filter on Enter key
+      filterInput.addEventListener('keyup', e => {
+        if (e.key === 'Enter') applyFilter();
+      });
+    })();
+</script>
+{% endblock scripts %}

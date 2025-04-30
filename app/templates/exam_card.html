@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4 text-center">Upcoming Events</h1>
+    <div class="row">
+      <!-- Card 1 -->
+      <div class="col-md-6 col-sm-12">
+        <div class="card">
+          <div class="py-3 px-3">
+            <h6>Title</h6>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Event One</h5>
+            <p class="card-text">Join us for an exciting event where you can learn about new opportunities.</p>
+            <a href="#" class="btn btn-outline-primary">Learn More</a>
+            <a href="#" class="btn btn-outline-danger">Learn More</a>
+          </div>
+        </div>
+      </div>   
+      
+    </div>
+  </div>
+  
+  {% endblock content %}

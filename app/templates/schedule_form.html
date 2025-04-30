@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100 py-3">
+    <div style="max-width: 700px;" class="login-card col-lg-4 col-md-6 col-sm-10"> {# Adjusted width slightly #}
+        <div class="login-form p-4"> {# Added padding #}
+            <div class="text-center mb-4">
+                <h3 class="heading fw-bold">{{heading}}</h3>
+                <hr class="my-4">
+            </div>
+
+            <div>
+                <form class="form-control" method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-control my-2" >
+                        {{ form.date.label }} {{ form.date(id='date', class='form-control') }}
+                    </div>
+                    <div class="form-control my-2">
+                        {{ form.session.label }} {{ form.session(id='session', class='form-control') }}
+                    </div>
+                    
+                    <div id="pairs" class="form-control my-2">
+                        <div class="pair d-flex form-control">
+                            <div class="form-group flex-grow-1 me-2"  style="width: 50%;">
+                                <label class="form-label">Staff 1</label>
+                                <select name="staff_1" class="form-select"></select>  
+                            </div>
+                            
+                            <div class="form-group flex-grow-1" style="width: 50%;">
+                                <label class="form-label">Venue 1</label>
+                                <select name="venue_1" class="form-select"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div>
+                            <button class="btn btn-md btn-outline-secondary" type="button" id="add_pair">Add Field</button>
+                        </div>
+                    </div>
+
+                    <hr class="pb-2">
+    
+                    <div class="text-center">
+                            {{ form.submit(class="btn btn-primary") }}
+                    </div>
+
+                </form>
+            </div>
+
+            
+            <div class="text-center mt-4">
+                <p class="mb-0">Staff not found? <a href="{{url_for('main.create_user')}}" class="btn btn-sm btn-outline-primary fw-bold">Add Staff</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+
+{% block scripts %}
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    function populateStaff(selectElement) {
+        fetch('/get_staff')
+            .then(response => response.json())
+            .then(data => {
+                selectElement.innerHTML = '<option value="">Select Staff</option>';
+                data.forEach(staff => {
+                    let option = document.createElement('option');
+                    option.value = staff.id;
+                    option.text = staff.name;
+                    selectElement.appendChild(option);
+                });
+            });
+    }
+
+    function populateVenues(selectElement, sessionId) {
+        fetch('/get_venues?session_id=' + sessionId)
+            .then(response => response.json())
+            .then(data => {
+                selectElement.innerHTML = '<option value="">Select Venue</option>';
+                data.forEach(venue => {
+                    let option = document.createElement('option');
+                    option.value = venue.id;
+                    option.text = venue.name;
+                    selectElement.appendChild(option);
+                });
+            });
+    }
+    
+
+    document.querySelector('#date').addEventListener('change', function() {
+        let date = this.value;
+        fetch('/get_sessions?date=' + date)
+            .then(response => response.json())
+            .then(data => {
+                let sessionSelect = document.querySelector('#session');
+                sessionSelect.innerHTML = '<option value="">Select Session</option>';
+                data.forEach(session => {
+                    let option = document.createElement('option');
+                    option.value = session.id;
+                    option.text = session.name;
+                    sessionSelect.appendChild(option);
+                });
+                sessionSelect.dispatchEvent(new Event('change'));
+            });
+    });
+
+    document.querySelector('#session').addEventListener('change', function() {
+        let sessionId = this.value;
+        if (sessionId) {
+            let venueSelects = document.querySelectorAll('[name^=venue_]');
+            venueSelects.forEach(select => populateVenues(select, sessionId));
+        }
+    });
+
+    let pairIndex = 1;
+    document.querySelector('#add_pair').addEventListener('click', function() {
+        pairIndex++;
+        let newPair = document.createElement('div');
+        newPair.className = 'pair d-flex';
+        newPair.style.marginBottom = '10px';
+        newPair.innerHTML = `
+            <div class="form-group flex-grow-1 me-2" style="width: 50%;">
+                <label class="form-label">Staff ${pairIndex}</label>
+                <select name="staff_${pairIndex}" class="form-select"></select>
+            </div>
+
+            <div class="form-group flex-grow-1" style="width: 50%;">
+                <label class="form-label">Venue ${pairIndex}</label>
+                <select name="venue_${pairIndex}" class="form-select"></select>
+            </div>
+        `;
+        document.querySelector('#pairs').appendChild(newPair);
+        populateStaff(newPair.querySelector('[name^=staff_]'));
+        let sessionId = document.querySelector('#session').value;
+        if (sessionId) {
+            populateVenues(newPair.querySelector('[name^=venue_]'), sessionId);
+        }
+    });
+
+    populateStaff(document.querySelector('[name=staff_1]'));
+});
+</script>
+
+{% endblock scripts %}

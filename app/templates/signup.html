@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+    <div class="login-card w-100" style="max-width: 960px;">
+        <div class="row g-0">
+            <div class="col-lg-5 login-sidebar d-none d-lg-block">
+                <h2 class="fw-bold mb-4">{{Heading}}</h2>
+                <p class="mb-5">Sign in to access your ExamTrack dashboard and manage exam attendance with ease.</p>
+                <div class="mt-5">
+                    <div class="auth-option d-flex align-items-center">
+                        <div class="icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Real-time Analytics</h6>
+                            <small class="text-white-50">Access instant reports and insights</small>
+                        </div>
+                    </div>
+                    <div class="auth-option d-flex align-items-center">
+                        <div class="icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Quick Attendance</h6>
+                            <small class="text-white-50">Streamlined check-in processes</small>
+                        </div>
+                    </div>
+                    <div class="auth-option d-flex align-items-center">
+                        <div class="icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Smart Notifications</h6>
+                            <small class="text-white-50">Stay updated on important events</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 login-form">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold">Sign In to ExamTrack</h3>
+                    <p class="text-muted">Enter your details to create an account</p>
+                </div>
+                
+               <div>
+                    {{render_form(form)}}
+               </div>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-0">Already have an account? <a href="#" class="text-decoration-none fw-bold">Sign In</a></p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row text-center">
+                    <div >
+                        <button class="btn btn-outline-secondary w-100">
+                            <i class="fab fa-google me-2"></i> Google
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

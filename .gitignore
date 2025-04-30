@@ -84,6 +84,7 @@ db.sqlite3-journal
 
 # Flask stuff:
 instance/
+backup/
 
 # Scrapy stuff:
 .scrapy

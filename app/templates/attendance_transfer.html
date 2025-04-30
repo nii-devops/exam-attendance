@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+  <div style="max-width: 500px;" class="login-card col-lg-4 col-md-6 col-sm-10">
+    <div class="login-form p-4">
+      <div class="text-center mb-4">
+        <h3 class="heading fw-bold">{{ heading }}</h3>
+        <hr class="my-4">
+      </div>
+
+      <div id="alert-area"></div>
+
+      <form id="attendance-form" method="POST" action="">
+        {{ form.hidden_tag() }}
+
+        <!-- Transfer Staff -->
+        <div class="mb-3">
+          <label for="transfer_staff_search" class="form-label">Transfer From</label>
+          {{ form.transfer_staff_search(
+               id="transfer_staff_search",
+               class="form-control"
+             ) }}
+          {{ form.transfer_staff_id(id="transfer_staff_id", type="hidden") }}
+        </div>
+
+        <!-- Receiving Staff -->
+        <div class="mb-3">
+          <label for="receiving_staff_search" class="form-label">Transfer To</label>
+          {{ form.receiving_staff_search(
+               id="receiving_staff_search",
+               class="form-control"
+             ) }}
+          {{ form.receiving_staff_id(id="receiving_staff_id", type="hidden") }}
+        </div>
+
+        <button id="submit_button"
+                type="submit"
+                class="btn btn-primary w-100">
+          {{ form.submit.label.text }}
+        </button>
+      </form>
+
+      <hr class="my-4">
+      <div class="text-center mt-4">
+        <p class="mb-0">
+          Staff not found?
+          <a href="{{ url_for('main.create_user') }}"
+             class="btn btn-sm btn-outline-primary fw-bold">
+            Add Staff
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+$(function() {
+  function initAutocomplete(searchSel, hiddenSel) {
+    $(searchSel).autocomplete({
+      source: function(req, resp) {
+        $.getJSON('/search_staff', { q: req.term })
+          .done(function(data) {
+            const items = $.map(data, function(item) {
+              return { label: item.name, value: item.name, id: item.id };
+            });
+            resp(items);
+          })
+          .fail(() => resp([]));
+      },
+      minLength: 2,
+      select: function(e, ui) {
+        $(hiddenSel).val(ui.item.id);
+        $(searchSel)
+          .removeClass('is-invalid')
+          .addClass('is-valid')
+          .next('.invalid-feedback').remove();
+        return false;
+      },
+      focus: function() { return false; },
+      change: function(e, ui) {
+        const txt = $(searchSel).val().trim();
+        $(searchSel).removeClass('is-valid is-invalid')
+                      .next('.invalid-feedback').remove();
+        if (!ui.item && txt) {
+          $(hiddenSel).val('');
+          $(searchSel)
+            .addClass('is-invalid')
+            .after('<div class="invalid-feedback">'
+                   + 'Please select a staff member from the list.'
+                   + '</div>');
+        } else if (!ui.item) {
+          $(hiddenSel).val('');
+        }
+      }
+    });
+  }
+
+  // initialize both autocompletes
+  initAutocomplete('#transfer_staff_search', '#transfer_staff_id');
+  initAutocomplete('#receiving_staff_search', '#receiving_staff_id');
+
+  // AJAX-submit with alert
+  $('#attendance-form').on('submit', function(e) {
+    e.preventDefault();
+    const $form = $(this);
+    $.ajax({
+      url: $form.attr('action') || window.location.pathname,
+      method: 'POST',
+      data: $form.serialize(),
+      dataType: 'json',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .done(function(resp) {
+      const cls = 'alert-' + resp.status;
+      const $a = $('<div>')
+        .addClass('alert ' + cls + ' alert-dismissible fade show')
+        .attr('role','alert')
+        .text(resp.message)
+        .append('<button type="button" class="btn-close" data-bs-dismiss="alert"></button>');
+      $('#alert-area').html($a);
+      setTimeout(() => $a.alert('close'), 1000);
+    })
+    .fail(function(xhr) {
+      const msg = xhr.responseJSON?.message || 'An unexpected error occurred';
+      const $a = $('<div>')
+        .addClass('alert alert-danger alert-dismissible fade show')
+        .attr('role','alert')
+        .text(msg)
+        .append('<button type="button" class="btn-close" data-bs-dismiss="alert"></button>');
+      $('#alert-area').html($a);
+      setTimeout(() => $a.alert('close'), 1000);
+    });
+  });
+});
+</script>
+{% endblock scripts %}

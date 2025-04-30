@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{title}}
+{% endblock title %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5">
+    <div style="max-width: 1200px;" class="login-card col-lg-10 col-md-12 col-sm-12">
+
+            <div style="background-color: whitesmoke;" class="container py-5 px-5 col-10 shadow-lg">
+
+                <div class="text-center mb-4">
+                    <h3 class="heading fw-bold">Privacy Policy for Electronic Staff Attendance App</h3>
+                    <p>Effective Date: [Insert Date]</p>
+                    <hr class="my-2">
+                </div>
+                
+               <div>
+                <p>
+                    Your privacy is extremely important to us. This Privacy Policy describes how the Electronic Staff Attendance App (“the App”) collects, uses, maintains, protects, and discloses information about its users (“you” or “your”). 
+                    By accessing or using the App, you agree to the terms of this Privacy Policy. If you do not agree with these terms, please do not use the App.
+                </p>
+
+                <h5>
+                    1. Definitions
+                </h5>
+                <p>
+                    <strong>Personal Data</strong>: Any information that relates to an identified or identifiable individual, including but not limited to names, 
+                    identification numbers, contact details, biometric data, and device identifiers.
+                    <br>
+                    <strong>Processing</strong>: Any operation or set of operations performed on personal data, including collection, recording, storage, alteration, retrieval, consultation, disclosure, and deletion.
+                    <br>
+                    <strong>Data Controller</strong>: The organization responsible for determining the purposes and means of processing personal data.
+
+                    Third Parties: Entities other than you and the App that may process personal data on our behalf or in connection with the App.
+
+                </p>
+                <hr class="py-3">
+                <h5>2. Information We Collect</h5>
+                <p>    
+                We collect and process different types of information to operate effectively and provide you with the best possible service:
+                <br>
+                <strong>a. Personal Identification Information</strong>
+                Name: Your full name as recorded by your employer. <br>
+
+                Email Address: Used for communication regarding attendance and system notifications. <br>
+
+                Phone Number: For emergency contact or system verification if needed. <br>
+
+                Employee/Staff ID: Unique identifier for each staff member. <br>
+
+                <strong>b. Biometric Data</strong>
+                Biometric Identifiers: Fingerprint data or other biometric markers used solely for verifying staff identity during attendance check-in and check-out.
+                <br>
+                Note: Biometric data is stored securely, processed only for attendance verification purposes, and is not shared with unauthorized third parties. The biometric data, if used by this system is not stored locally, 
+                but verified against the central database of the Institution via API calls.
+                <br>
+                <strong>c. Attendance and Usage Data</strong>
+                Attendance Records: Timestamped check-in and check-out logs, session details, and venue data.
+
+                User Interaction Data: Data on how you use the App, including login times, session durations, and navigation patterns.
+                <br>
+                <strong>d. Device and Technical Information</strong>
+                Device Identifiers: Information about the device used to access the App (e.g., device ID, operating system).
+
+                IP Address: Logged for security and auditing purposes.
+                Browser and App Version: Used to improve user experience and troubleshoot issues.
+                </p>
+
+                <hr class="py-3">
+                <h5>
+                    3. How We Use Your Information
+                </h5>
+                <p>
+                Your information is used for a variety of legitimate purposes, including but not limited to:
+                <br>
+                <strong>Attendance Verification</strong>: To authenticate staff identity and record their check-in and check-out times.
+                <br>
+                <strong>Operational Management</strong>: To generate attendance reports, track staff work patterns, and manage scheduling.
+                <br>
+                <strong>System Improvement</strong>: To analyze usage patterns and improve the functionality, performance, and security of the App.
+                <br>
+                <strong>Communication</strong>: To send updates, notifications, or alerts related to your attendance or the App.
+                <br>
+                <strong>Compliance</strong>: To comply with legal and regulatory obligations, as well as internal policies.
+                </p>
+                    
+                
+               </div>
+               
+            </div>
+
+    </div>
+</div>
+
+
+{% endblock content %}
+

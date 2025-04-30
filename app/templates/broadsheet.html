@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <style>
+    .table-wrapper {
+  max-height: 70vh;
+  overflow: auto;
+  position: relative;
+}
+.table-wrapper table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+}
+.table-wrapper th,
+.table-wrapper td {
+  white-space: nowrap;
+}
+/* freeze first 4 columns */
+.table-wrapper th:nth-child(1),
+.table-wrapper td:nth-child(1) {
+  position: sticky; left: 0; z-index: 3; background: #fff;
+}
+.table-wrapper th:nth-child(2),
+.table-wrapper td:nth-child(2) {
+  position: sticky; left: 50px; z-index: 3; background: #fff;
+}
+.table-wrapper th:nth-child(3),
+.table-wrapper td:nth-child(3) {
+  position: sticky; left: 250px; z-index: 3; background: #fff;
+}
+.table-wrapper th:nth-child(4),
+.table-wrapper td:nth-child(4) {
+  position: sticky; left: 450px; z-index: 3; background: #fff;
+}
+
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h3 class="mb-4 text-center">{{ heading }}</h3>
+  <hr class="py-2">
+
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{{ url_for('main.download_broadsheet_excel', date=request.args.get('date')) }}"
+       class="btn btn-success">
+      <i class="bi bi-file-earmark-excel"></i> Download Excel
+    </a>
+  </div>
+
+  <div class="table-wrapper my-5 py-5">
+    <table class="table table-striped shadow-sm">
+      <thead class="bg-primary text-white">
+        <tr>
+          <th>#</th>
+          <th class="col-4">STAFF</th>
+          <th>CATEGORY</th>
+          {# now loop distinct sessions #}
+          {% for sess in sessions %}
+            <th>{{ sess.date }} | {{ sess.session_number.name }}</th>
+          {% endfor %}
+          <th>Session Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in staff %}
+        <tr>
+          <th>{{ loop.index }}</th>
+          <td>{{ user.first_name }} {{ user.surname }}</td>
+          <td>{{ user.category.name }}</td>
+
+          {# for each session, check if user has an attendance record #}
+          {% for sess in sessions %}
+            {% set present = (attendance 
+                  | selectattr('session_id','equalto', sess.id)
+                  | selectattr('user_id','equalto', user.id)
+                  | list
+                  | length) > 0 %}
+            {% if present %}
+              <td class="present" style="background-color: rgb(47, 189, 47);">Present</td>
+            {% else %}
+              <td class="absent">Absent</td>
+            {% endif %}
+          {% endfor %}
+
+          {# count total sessions attended by this user #}
+          {% set user_count = (attendance
+               | selectattr('user_id','equalto', user.id)
+               | list
+               | length) %}
+          <td><strong>{{ user_count }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

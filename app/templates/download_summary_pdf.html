@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+        <style>
+            /* minimal styling for PDF */
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 0.5em; border: 1px solid #333; }
+            th { background: #007bff; color: #fff; }
+            h3 { text-align: center; }
+        </style>
+    </head>
+
+
+    <body>
+    <h3>{{ heading }}</h3>
+    <table>
+        <thead>
+            <tr class="bg-info">
+                <th>#</th>
+                <th>Title</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Category</th>
+                <th>Session Count</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in staff %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{% if user.title_id %}{{ user.title.title }}{% endif %}</td>
+                <td>{{user.first_name}} {{user.surname}} </td>
+                <td>{{user.department.name}}</td>
+                <td>{{user.category.name}}</td>
+                <td style="font-size: 1.2rem;" class="text-center"><strong>{{user.session_count}}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </tbody>
+    </table>
+    </body>
+</html>

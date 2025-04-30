@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+  {{ title }}
+{% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100 my-5 py-5">
+  <div style="max-width: 450px;" class="login-card col-lg-4 col-md-6 col-sm-10">
+    <div class="login-form">
+      <div class="text-center mb-4">
+        <h3 class="heading fw-bold">{{ heading }}</h3>
+        <hr class="my-4">
+      </div>
+
+      {{ render_form(form) }}
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+$(function() {
+  // whenever the date changes...
+  $('#date').on('change', function() {
+    var selectedDate = $(this).val();
+    var $session = $('#session');
+
+    // clear out old options
+    $session.prop('disabled', true).empty()
+            .append($('<option>', {
+              value: '',
+              text: 'Loading sessions…'
+            }));
+
+    if (!selectedDate) {
+      // no date selected: reset to placeholder
+      $session.empty().append($('<option>', {
+        value: '',
+        text: 'Select a date first'
+      }));
+      return;
+    }
+
+    // fetch sessions for that date
+    $.ajax({
+      url: '/get_sessions',
+      type: 'GET',
+      data: { date: selectedDate },
+      dataType: 'json'
+    })
+    .done(function(data) {
+      $session.empty();
+      if (data.length) {
+        // first placeholder
+        $session.append($('<option>', {
+          value: '',
+          text: 'Select a session'
+        }));
+        // then real options
+        data.forEach(function(s) {
+          // build the label “SESSION_NUMBER – HH:MM”
+          // if your backend returned session_number you can use it;
+          // otherwise this shows date + time
+          var dateOnly = s.date.split('T')[0];
+          var label = (s.session_number || s.date) + ' – ' + s.start_time;
+          $session.append($('<option>', {
+            value: s.id,
+            text: label
+          }));
+        });
+      } else {
+        $session.append($('<option>', {
+          value: '',
+          text: 'No sessions on ' + selectedDate
+        }));
+      }
+    })
+    .fail(function(xhr, status, err) {
+      console.error('Error retrieving sessions:', err);
+      $session.empty().append($('<option>', {
+        value: '',
+        text: 'Error loading sessions'
+      }));
+    })
+    .always(function() {
+      $session.prop('disabled', false);
+    });
+  });
+
+  // If you want the form to auto-load sessions on page-load
+  // when a date is already filled in by Flask, uncomment:
+  //
+  // var initialDate = $('#date').val();
+  // if (initialDate) {
+  //   $('#date').trigger('change');
+  // }
+});
+</script>
+{% endblock scripts %}
